@@ -1,6 +1,7 @@
 % Numerical computation of referefence priors for Normal distribution scale
 % (standard deviation)
-% reference: Berger et al. (2009)
+% reference: Berger et al. (2009), The formal definition of reference
+% priors
 % alpha=frac_{\sum_{i=1}{k}(x_i-\mu)}{2}
 % initial prior, \pi^*=1
 % 
