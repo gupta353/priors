@@ -1,38 +1,31 @@
-%% referefence priors for Normal distribution location and scale
+% referefence priors for Normal distribution location and scale
 
 clear all
 close all
 clc
 
-k=100;
-m=100;
-pi_star=1;
+k=1000;         % number of samples in each set
+m=10000;        % number of sets of samples
+pi_star=1;      % initial prior
 
-mu=-10:10;
-sig2=1:10;
+mu=-10:10;      % mean values at which prior is to be evaluated
+sig2=1:10;      % variance values at which prior is to be evaluated
 
 for i=1:length(mu)
+    
     for ii=1:length(sig2)
         for j=1:m
             mu_tmp=mu(i);
             sig2_tmp=sig2(ii);
-            samps=normrnd(mu_tmp,sig2_tmp,[k,1]);
-            func=@(x,y)prod(normpdf(samps,x,y));
-    %         c(j)=integral(func,1,10);
-            % integration using trapz method
-            x=-20:20;
-            y=1:0.1:10;
-            for a=1:length(x)
-                for b=1:length(y)
-                    z(a,b)=func(x(a),y(b));
-                end
-            end
-
-            c=trapz(x,z,1);
-            c(j)=trapz(y,c);
-            expr=prod(normpdf(samps,mu_tmp,sig2_tmp))*pi_star/c(j);
-            r(j)=log(expr);
+            samps=normrnd(mu_tmp,sqrt(sig2_tmp),[k,1]);             % k samples from normal distribution
+            avg=sum(samps)/k;                                       % sample average of drawn samples
+            alpha=sum((samps-mu_tmp).^2)/2;                         % alpha as defined in the header
+            s2=sum((samps-avg).^2)/k;                               % sample variance of drawn samples
+            log_asymp_post(j)=(k-1)*log(s2)/2+(k/2-1/2)*log(k)-...  % log of asymptotic posterior evaulated at given points in parameter space
+                1/2*log(2*pi)-(k/2-2)*log(2)-k*log(sig2_tmp)/2-...
+                gammaln(k/2-1/2)-alpha/sig2_tmp;
         end
-        PI(i,ii)=exp(sum(r)/m);
+        PI(i,ii)=exp(sum(log_asymp_post)/m);                        % prior density at given point in parameter space
     end
+    
 end
