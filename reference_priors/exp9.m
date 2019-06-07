@@ -22,7 +22,7 @@ t=3600;   % time at which infiltration is computed (in s)
 g=@(x)Green_Ampt_solution(x,psi,delta_theta,t);
 
 kh=(1:0.5:30)/3600;          % hydraulic conductivity values at which prior is to be evaluated
-sig2=[1,10];                  % variance values at which prior is to be evaluated
+sig2=[1,5,10];                  % variance values at which prior is to be evaluated
 
 for i=1:length(kh)
     for ii=1:length(sig2)
@@ -41,6 +41,31 @@ for i=1:length(kh)
                 0.5*log(2*pi)-k*log(sig2_tmp)/2+(k-4)/2*log(2)-...
                 gammaln(k/2-1)-alpha/sig2_tmp+log(der);
         end
-        PI(i,ii)=exp(sum(log_asymp_post)/m);                            % evaluation of the prior at the given point in parameter space
+        E_log_asymp_post(i,ii)=sum(log_asymp_post)/m;                   % expectation of log of asymptotic posterior at the given point in parameter space
     end
 end
+
+% Normalization of the prior
+% a contant equal to mean of teh matrix E_log_asymp_post is sbtracted from
+% E_log_asymp_post before taking exponential
+PI=exp(E_log_asymp_post-sum(sum(E_log_asymp_post))/length(kh)/length(sig2));   % unnormalized prior
+for i=1:length(sig2)
+    A1(i)=trapz(kh,PI(:,i));
+end
+A=trapz(sqrt(sig2),A1); % total area under the curve
+
+PI=PI/A; % normalized density
+
+
+% plots of prior density
+%
+
+%}
+
+
+
+
+
+
+
+
