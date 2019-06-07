@@ -25,7 +25,7 @@ for i=1:length(mu)
             avg=sum(samps)/k;                                       % sample average of drawn samples
             alpha=sum((samps-mu_tmp).^2)/2;                         % alpha as defined in the header
             s2=sum((samps-avg).^2)/k;                               % sample variance of drawn samples
-            log_asymp_post(j)=(k-1)*log(s2)/2+(k/2-1/2)*log(k)-...  % log of asymptotic posterior evaulated at given points in parameter space
+            log_asymp_post(j)=(k-2)*log(s2)/2+(k/2-1/2)*log(k)-...  % log of asymptotic posterior evaulated at given points in parameter space
                 1/2*log(2*pi)-(k/2-2)*log(2)-k*log(sig2_tmp)/2-...
                 gammaln(k/2-1/2)-alpha/sig2_tmp;
         end
