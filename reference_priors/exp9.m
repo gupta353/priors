@@ -12,6 +12,9 @@ clear all
 close all
 clc
 
+save_dir=['D:\Research\Thesis_work\Non_informative_priors',...
+    '\matlab_codes\reference_priors\plots'];
+
 k=1000;
 m=10000;
 
@@ -22,7 +25,7 @@ t=3600;   % time at which infiltration is computed (in s)
 g=@(x)Green_Ampt_solution(x,psi,delta_theta,t);
 
 kh=(1:0.5:30)/3600;          % hydraulic conductivity values at which prior is to be evaluated
-sig2=[1,5,10];                  % variance values at which prior is to be evaluated
+sig2=[1:20];                  % variance values at which prior is to be evaluated
 
 for i=1:length(kh)
     for ii=1:length(sig2)
@@ -59,11 +62,57 @@ PI=PI/A; % normalized density
 
 % plots of prior density
 %
+% density of hydraulic conductivity for each value of standard
+% deviation
+plot(kh*3600,PI(:,1:floor(end/5)-1:end),'linewidth',2)
+box('on');
+box.linewidth=2;
+set(gca,'fontname','arial','fontsize',12,box)
+xlabel('hydraulic conductivity (K, cm h^{-1})',...
+    'fontname','arial','fontsize',12);
+ylabel('prior density','fontname','arial','fontsize',12);
 
+sname='GA_prior_K_intital_prior_1';
+save_filename=fullfile(save_dir,sname);
+print(save_filename,'-r300','-djpeg');
+clear box
+
+% density of standard deviation for each value of 
+% hydraulic conductivity
+plot(sqrt(sig2),PI(1:floor(end/2)-1:end,:),'linewidth',2)
+box('on');
+box.linewidth=2;
+set(gca,'fontname','arial','fontsize',12,box)
+xlabel('standard deviation (\sigma)',...
+    'fontname','arial','fontsize',12);
+ylabel('prior density','fontname','arial','fontsize',12);
+
+sname='GA_prior_sigma_intital_prior_1';
+save_filename=fullfile(save_dir,sname);
+print(save_filename,'-r300','-djpeg');
+clear box
+
+% joint density of hydraulic conductivity and standard deviation
+[X,Y]=meshgrid(sqrt(sig2),3600*kh');
+surf(X,Y,PI,'LineStyle','none','facealpha',0.8)
+colorbar;
+xlabel('standard deviation ( \sigma)',...
+    'fontname','arial','fontsize',12);
+ylabel(' K (cm h^{-1})',...
+    'fontname','arial','fontsize',12);
+zlabel('prior density','fontname','arial','fontsize',12);
+set(gca,'fontname','arial','fontsize',12)
+
+sname='GA_prior_joint_intital_prior_1';
+save_filename=fullfile(save_dir,sname);
+print(save_filename,'-r300','-djpeg');
 %}
 
 
-
+% save the matrix PI
+fname='prior_density_data';
+save_filename=fullfile(save_dir,fname);
+dlmwrite(save_filename,PI,',')
 
 
 
