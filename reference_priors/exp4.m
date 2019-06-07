@@ -1,4 +1,8 @@
 % referefence priors for Normal distribution location and scale
+% reference: Berger et al. (2009), The formal definition of reference
+% priors
+% intial prior used: pi_star=1;
+
 
 clear all
 close all
