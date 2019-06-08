@@ -110,7 +110,7 @@ print(save_filename,'-r300','-djpeg');
 
 
 % save the matrix PI
-fname='prior_density_data';
+fname='prior_density_data_prior_1';
 save_filename=fullfile(save_dir,fname);
 dlmwrite(save_filename,PI,',')
 
