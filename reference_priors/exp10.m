@@ -61,7 +61,8 @@ for i=1:length(kh)
     end
 end
 
-PI=exp(E_log_asymp_post-sum(sum(E_log_asymp_post))/length(sig2)/length(kh));     % unnormalized density
+% unnormalized density (ith row denotes ith 'kh' value and jth column denotes jth 'sig2' values)
+PI=exp(E_log_asymp_post-sum(sum(E_log_asymp_post))/length(sig2)/length(kh));     
 
 for i=1:length(sig2)
     A1(i)=trapz(kh,PI(:,i));                                                            
@@ -81,12 +82,12 @@ set(gca,'fontname','arial','fontsize',12,box)
 xlabel('hydraulic conductivity (K, cm h^{-1})',...
     'fontname','arial','fontsize',12);
 ylabel('prior density','fontname','arial','fontsize',12);
-
+clear box
+%
 sname='GA_prior_K_intital_prior_2';
 save_filename=fullfile(save_dir,sname);
 print(save_filename,'-r300','-djpeg');
-clear box
-
+%}
 % density of standard deviation for each value of 
 % hydraulic conductivity
 plot(sqrt(sig2),PI(1:floor(end/2)-1:end,:),'linewidth',2)
@@ -96,12 +97,12 @@ set(gca,'fontname','arial','fontsize',12,box)
 xlabel('standard deviation (\sigma)',...
     'fontname','arial','fontsize',12);
 ylabel('prior density','fontname','arial','fontsize',12);
-
+%
 sname='GA_prior_sigma_intital_prior_2';
 save_filename=fullfile(save_dir,sname);
 print(save_filename,'-r300','-djpeg');
-clear box
 
+%}
 % joint density of hydraulic conductivity and standard deviation
 [X,Y]=meshgrid(sqrt(sig2),3600*kh');
 surf(X,Y,PI,'LineStyle','none','facealpha',0.8)
@@ -112,14 +113,23 @@ ylabel(' K (cm h^{-1})',...
     'fontname','arial','fontsize',12);
 zlabel('prior density','fontname','arial','fontsize',12);
 set(gca,'fontname','arial','fontsize',12)
-
+clear box
+%
 sname='GA_prior_joint_intital_prior_2';
 save_filename=fullfile(save_dir,sname);
 print(save_filename,'-r300','-djpeg');
 %}
 
-
-% save the matrix PI
+% save the data
+% reformat the data such that every row contains point in multi-dimensional
+% space and corresponding Bernardo's density
+count=0;
+for i=1:length(kh)
+    for ii=1:length(sig2)
+        count=count+1;
+        save_data(count,:)=[kh(i),sqrt(sig2(ii)),PI(i,ii)];
+    end
+end
 fname='prior_density_data_initial_prior_2';
 save_filename=fullfile(save_dir,fname);
-dlmwrite(save_filename,PI,',')
+dlmwrite(save_filename,save_data,',')
