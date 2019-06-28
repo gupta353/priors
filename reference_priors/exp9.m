@@ -51,11 +51,12 @@ end
 % Normalization of the prior
 % a contant equal to mean of teh matrix E_log_asymp_post is sbtracted from
 % E_log_asymp_post before taking exponential
-PI=exp(E_log_asymp_post-sum(sum(E_log_asymp_post))/length(kh)/length(sig2));   % unnormalized prior
+PI=exp(E_log_asymp_post-sum(sum(E_log_asymp_post))/length(kh)/length(sig2));   % unnormalized density (ith row denotes ith 'kh' value and jth column denotes jth 'sig2' values)
 for i=1:length(sig2)
     A1(i)=trapz(kh,PI(:,i));
 end
 A=trapz(sqrt(sig2),A1); % total area under the curve
+
 
 PI=PI/A; % normalized density
 
@@ -109,10 +110,19 @@ print(save_filename,'-r300','-djpeg');
 %}
 
 
-% save the matrix PI
-fname='prior_density_data_prior_1';
+% save the data
+% reformat the data such that every row contains point in multi-dimensional
+% space and corresponding Bernardo's density
+count=0;
+for i=1:length(kh)
+    for ii=1:length(sig2)
+        count=count+1;
+        save_data(count,:)=[kh(i),sqrt(sig2(ii)),PI(i,ii)];
+    end
+end
+fname='prior_density_data_initial_prior_1';
 save_filename=fullfile(save_dir,fname);
-dlmwrite(save_filename,PI,',')
+dlmwrite(save_filename,save_data,',')
 
 
 
