@@ -7,16 +7,17 @@
 
 function L=Gaussloglikeli(theta)
 
-y0=10;              % observed cumulative infiltration value
-kh=theta(1);        % hydraulic conductivity in cm s^-1
-sig=theta(2);       % standard-deviation
+global GLOBAL_DATA
 
+y0=GLOBAL_DATA.y0;
 % other known parameters of Green-Ampt equation
 psi=16.68;          % (in cm)
 delta_theta=0.340;  % change in moisture content
 t=3600;   % time at which infiltration is computed (in s)
 g=@(x)Green_Ampt_solution(x,psi,delta_theta,t);
 
+kh=theta(1);        % hydraulic conductivity in cm s^-1
+sig=theta(2);       % standard-deviation
 
 mu=g(kh);           % computation of infiltration at kh
 
