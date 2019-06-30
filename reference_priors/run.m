@@ -46,13 +46,14 @@ addpath(EXAMPLE_dir)
 Func_name='Gaussloglikeli';                 % target pdf
 DREAMPar.d=2;                               % dimensionality of the problem
 DREAMPar.N=8;                               % Number of chains
-DREAMPar.T=500;                             % Number of generations
+DREAMPar.T=5000;                             % Number of generations
 DREAMPar.lik=2;                             % Type of likelihood (2 indicates log-likelihood)
 
-Par_info.initial='uniform';                 % type of prior 
+Par_info.initial='prior';                 % type of prior 
 Par_info.min=[0.0001,0.0001];                   
-Par_info.max=[0.0083333,100];          % upper bound
+Par_info.max=[0.0083333,10];          % upper bound
 Par_info.boundhandling='fold';              % type of boundhandling
+Par_info.prior=@(x)berpdf(x);
 
 [chain,output,fx]=DREAM(Func_name,...       % main function to Run Dream
     DREAMPar,Par_info);
