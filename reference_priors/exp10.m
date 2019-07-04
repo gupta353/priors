@@ -29,7 +29,7 @@ t=3600;   % time at which infiltration is computed (in s)
 g=@(x)Green_Ampt_solution(x,psi,delta_theta,t);
 
 
-kh=(1:0.5:30)/3600;      % hydraulic conductivity values at which prior is to be evaluated
+kh=(0.01:0.01:1)/3600;      % hydraulic conductivity values at which prior is to be evaluated
 sig2=1:100;       % variance values at which prior is to be evaluated 
 
 % parameters of iniitial prior as mentioned in header
@@ -84,7 +84,7 @@ xlabel('hydraulic conductivity (K, cm h^{-1})',...
 ylabel('prior density','fontname','arial','fontsize',12);
 clear box
 %
-sname='GA_prior_K_intital_prior_2';
+sname='GA_prior_K_intital_prior_2_07_04_2019';
 save_filename=fullfile(save_dir,sname);
 print(save_filename,'-r300','-djpeg');
 %}
@@ -98,7 +98,7 @@ xlabel('standard deviation (\sigma)',...
     'fontname','arial','fontsize',12);
 ylabel('prior density','fontname','arial','fontsize',12);
 %
-sname='GA_prior_sigma_intital_prior_2';
+sname='GA_prior_sigma_intital_prior_2_07_04_2019';
 save_filename=fullfile(save_dir,sname);
 print(save_filename,'-r300','-djpeg');
 
@@ -115,7 +115,7 @@ zlabel('prior density','fontname','arial','fontsize',12);
 set(gca,'fontname','arial','fontsize',12)
 clear box
 %
-sname='GA_prior_joint_intital_prior_2';
+sname='GA_prior_joint_intital_prior_2_07_04_2019';
 save_filename=fullfile(save_dir,sname);
 print(save_filename,'-r300','-djpeg');
 %}
@@ -130,6 +130,6 @@ for i=1:length(kh)
         save_data(count,:)=[kh(i),sqrt(sig2(ii)),PI(i,ii)];
     end
 end
-fname='prior_density_data_initial_prior_2';
+fname='prior_density_data_initial_prior_2_07_04_2019';
 save_filename=fullfile(save_dir,fname);
 dlmwrite(save_filename,save_data,',')
