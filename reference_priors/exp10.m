@@ -30,7 +30,7 @@ g=@(x)Green_Ampt_solution(x,psi,delta_theta,t);
 
 
 kh=(0.01:0.01:1)/3600;      % hydraulic conductivity values at which prior is to be evaluated
-sig2=1:100;       % variance values at which prior is to be evaluated 
+sig2=0.01:0.01:1;       % variance values at which prior is to be evaluated 
 
 % parameters of iniitial prior as mentioned in header
 gamma=0.01;     
