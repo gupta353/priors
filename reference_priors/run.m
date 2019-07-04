@@ -30,7 +30,7 @@ GLOBAL_DATA.Bernardo_pdf=Bernardo_pdf;
 GLOBAL_DATA.y0=y0;
 
 % computation of posterior using DREAM
-%
+%{
 
 global DREAM_dir EXAMPLE_dir CONV_dir
 DREAM_dir=['D:/Research/Thesis_work/Non_informative_priors'...
@@ -58,3 +58,13 @@ Par_info.prior=@(x)berpdf(x);
 [chain,output,fx]=DREAM(Func_name,...       % main function to Run Dream
     DREAMPar,Par_info);
 %}
+
+% computation of posterior using MATLAB mhsample
+start=[0.001,5];
+nsamples=100000;
+min_value=[0.0001,0.0001];                   
+max_value=[0.0083333,10]; 
+pdf=@(x)exp(Gaussloglikeli(x))*prod(unifpdf(x,min_value,max_value));
+proppdf=@(x,y)prod(unifpdf(x,min_value,max_value));
+proprnd=@(x)unifrnd(min_value,max_value);
+smpl = mhsample(start,nsamples,'pdf',pdf,'proppdf',proppdf, 'proprnd',proprnd);
