@@ -39,6 +39,7 @@ for i=1:length(kh_range)
     pdf_temp(end)=pdf_temp(end)/2;
     marginal_pdf_values_kh(i)=sum(pdf_temp)*base_area;
 end
+break
 %% computation of marginal pdf of sigma
 pdf_sigma=sortrows(Bernardo_pdf,2);
 sigma_range=unique(pdf_sigma(:,2));
@@ -61,7 +62,7 @@ GLOBAL_DATA.sigma_range=sigma_range;
 GLOBAL_DATA.marginal_pdf_values_sigma=marginal_pdf_values_sigma;
 GLOBAL_DATA.marginal_pdf_values_kh=marginal_pdf_values_kh;
 GLOBAL_DATA.y0=y0;
-break
+
 %% computation of posterior using DREAM
 %{
 
@@ -94,16 +95,18 @@ Par_info.prior=@(x)berpdf(x);
 
 %% computation of posterior using MATLAB mhsample
 %
-start=[0.04/3600,0.5];
+known_sigma=2;
+start=[0.04/3600];
 nsamples=10000;
 min_value=0.01/3600;                   
 max_value=1/3600; 
-pdf=@(x)exp(Gaussloglikeli(x))*bernardo_pdf(x);
-proppdf=@(x,y)prod(unifpdf(x,min_value,max_value));
+pdf=@(x)exp(Gaussloglikeli([x,known_sigma]))*marginal_bernardo_pdf_kh(x);
+proppdf=@(x,y)unifpdf(x,min_value,max_value);
 proprnd=@(x)unifrnd(min_value,max_value);
 smpl = mhsample(start,nsamples,'pdf',pdf,'proppdf',proppdf, 'proprnd',proprnd);
 
 % save the smpl file
+%{
 save_fname='Posterior_mhsample_Bernardo_prior_07_04_2019';
 save_filename=fullfile(save_dir,save_fname);
 dlmwrite(save_filename,smpl);
