@@ -45,7 +45,7 @@ GLOBAL_DATA.Bernardo_pdf=Bernardo_pdf;
 GLOBAL_DATA.sigma_range=sigma_range;
 GLOBAL_DATA.marginal_pdf_values=marginal_pdf_values;
 GLOBAL_DATA.y0=y0;
-break
+
 % computation of posterior using DREAM
 %{
 
@@ -82,8 +82,13 @@ start=[0.04/3600,0.5];
 nsamples=100000;
 min_value=[0.01/3600,0.01];                   
 max_value=[1/3600,1]; 
-pdf=@(x)exp(Gaussloglikeli(x))*unifpdf(x(1),min_value(1),max_value(1))*marginal_bernardo_pdf_sigma(x(2));
+pdf=@(x)exp(Gaussloglikeli(x))*bernardo_pdf(x);
 proppdf=@(x,y)prod(unifpdf(x,min_value,max_value));
 proprnd=@(x)unifrnd(min_value,max_value);
 smpl = mhsample(start,nsamples,'pdf',pdf,'proppdf',proppdf, 'proprnd',proprnd);
+
+% save the smpl file
+save_fname='Posterior_mhsample_Bernardo_prior_07_04_2019';
+save_filename=fullfile(save_dir,save_fname);
+dlmwrite(save_filename,smpl);
 %}
