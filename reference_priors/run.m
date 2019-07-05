@@ -56,8 +56,10 @@ for i=1:length(sigma_range)
 end
 %% GLOBAL_DATA
 GLOBAL_DATA.Bernardo_pdf=Bernardo_pdf;
+GLOBAL_DATA.kh_range=kh_range;
 GLOBAL_DATA.sigma_range=sigma_range;
 GLOBAL_DATA.marginal_pdf_values_sigma=marginal_pdf_values_sigma;
+GLOBAL_DATA.marginal_pdf_values_kh=marginal_pdf_values_kh;
 GLOBAL_DATA.y0=y0;
 break
 %% computation of posterior using DREAM
