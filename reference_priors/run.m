@@ -25,28 +25,42 @@ Bernardo_pdf=[data{1},data{2},data{3}];
 % observed cumulative infiltration
 y0=3.17;            % in cm
 
-%computation of marginal pdf of sigma
-pdf=sortrows(Bernardo_pdf,2);
-sigma_range=unique(pdf(:,2));
+%% computation of marginal pdf of hydraulic conductivity K_h
+pdf_kh=sortrows(Bernardo_pdf,1);
+kh_range=unique(pdf_kh(:,1));
+
+for i=1:length(kh_range)
+    kh=kh_range(i);
+    ind=find(pdf_kh(:,1)==kh);
+    sigma=pdf_kh(ind,2);
+    base_area=sigma(2)-sigma(1);
+    pdf_temp=pdf_kh(ind,3);
+    pdf_temp(1)=pdf_temp(1)/2;
+    pdf_temp(end)=pdf_temp(end)/2;
+    marginal_pdf_values_kh(i)=sum(pdf_temp)*base_area;
+end
+%% computation of marginal pdf of sigma
+pdf_sigma=sortrows(Bernardo_pdf,2);
+sigma_range=unique(pdf_sigma(:,2));
 
 % compute marginal pdf
 for i=1:length(sigma_range)
     sigma=sigma_range(i);
-    ind=find(pdf(:,2)==sigma);
-    kh=pdf(ind,1);
+    ind=find(pdf_sigma(:,2)==sigma);
+    kh=pdf_sigma(ind,1);
     base_area=kh(2)-kh(1);
-    pdf_temp=pdf(ind,3);
+    pdf_temp=pdf_sigma(ind,3);
     pdf_temp(1)=pdf_temp(1)/2;
     pdf_temp(end)=pdf_temp(end)/2;
-    marginal_pdf_values(i)=base_area*sum(pdf_temp);
+    marginal_pdf_values_sigma(i)=base_area*sum(pdf_temp);
 end
-% GLOBAL_DATA
+%% GLOBAL_DATA
 GLOBAL_DATA.Bernardo_pdf=Bernardo_pdf;
 GLOBAL_DATA.sigma_range=sigma_range;
-GLOBAL_DATA.marginal_pdf_values=marginal_pdf_values;
+GLOBAL_DATA.marginal_pdf_values_sigma=marginal_pdf_values_sigma;
 GLOBAL_DATA.y0=y0;
-
-% computation of posterior using DREAM
+break
+%% computation of posterior using DREAM
 %{
 
 global DREAM_dir EXAMPLE_dir CONV_dir
@@ -76,12 +90,12 @@ Par_info.prior=@(x)berpdf(x);
     DREAMPar,Par_info);
 %}
 
-% computation of posterior using MATLAB mhsample
+%% computation of posterior using MATLAB mhsample
 %
 start=[0.04/3600,0.5];
-nsamples=100000;
-min_value=[0.01/3600,0.01];                   
-max_value=[1/3600,1]; 
+nsamples=10000;
+min_value=0.01/3600;                   
+max_value=1/3600; 
 pdf=@(x)exp(Gaussloglikeli(x))*bernardo_pdf(x);
 proppdf=@(x,y)prod(unifpdf(x,min_value,max_value));
 proprnd=@(x)unifrnd(min_value,max_value);
