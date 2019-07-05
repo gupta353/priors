@@ -14,7 +14,7 @@ save_dir=['D:/Research/Thesis_work/Non_informative_priors'...
 d=2; % dimension of the data
 
 % read Bernardo's prior data
-fname='prior_density_data_initial_prior_2';
+fname='prior_density_data_initial_prior_2_07_04_2019';
 filename=fullfile(save_dir,'results',fname);
 formatspec=repmat('%f',1,d+1);
 fid=fopen(filename,'r');
@@ -23,12 +23,29 @@ fclose(fid);
 Bernardo_pdf=[data{1},data{2},data{3}];
 
 % observed cumulative infiltration
-y0=1.27;            % in cm
+y0=3.17;            % in cm
 
+%computation of marginal pdf of sigma
+pdf=sortrows(Bernardo_pdf,2);
+sigma_range=unique(pdf(:,2));
+
+% compute marginal pdf
+for i=1:length(sigma_range)
+    sigma=sigma_range(i);
+    ind=find(pdf(:,2)==sigma);
+    kh=pdf(ind,1);
+    base_area=kh(2)-kh(1);
+    pdf_temp=pdf(ind,3);
+    pdf_temp(1)=pdf_temp(1)/2;
+    pdf_temp(end)=pdf_temp(end)/2;
+    marginal_pdf_values(i)=base_area*sum(pdf_temp);
+end
 % GLOBAL_DATA
 GLOBAL_DATA.Bernardo_pdf=Bernardo_pdf;
+GLOBAL_DATA.sigma_range=sigma_range;
+GLOBAL_DATA.marginal_pdf_values=marginal_pdf_values;
 GLOBAL_DATA.y0=y0;
-
+break
 % computation of posterior using DREAM
 %{
 
@@ -60,11 +77,13 @@ Par_info.prior=@(x)berpdf(x);
 %}
 
 % computation of posterior using MATLAB mhsample
-start=[0.001,5];
+%
+start=[0.04/3600,0.5];
 nsamples=100000;
-min_value=[0.0001,0.0001];                   
-max_value=[0.0083333,10]; 
-pdf=@(x)exp(Gaussloglikeli(x))*prod(unifpdf(x,min_value,max_value));
+min_value=[0.01/3600,0.01];                   
+max_value=[1/3600,1]; 
+pdf=@(x)exp(Gaussloglikeli(x))*unifpdf(x(1),min_value(1),max_value(1))*marginal_bernardo_pdf_sigma(x(2));
 proppdf=@(x,y)prod(unifpdf(x,min_value,max_value));
 proprnd=@(x)unifrnd(min_value,max_value);
 smpl = mhsample(start,nsamples,'pdf',pdf,'proppdf',proppdf, 'proprnd',proprnd);
+%}
