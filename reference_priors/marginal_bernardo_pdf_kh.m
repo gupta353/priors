@@ -4,7 +4,7 @@
 function marginal_pdf_x=marginal_bernardo_pdf_kh(x)
 
 global GLOBAL_DATA
-marginal_pdf_values_kh=GLOBAL_DATA.marginal_pdf_values_sigma;
+marginal_pdf_values_kh=GLOBAL_DATA.marginal_pdf_values_kh;
 kh_range=GLOBAL_DATA.kh_range;
 
 % compute marginal pdf at user-given x

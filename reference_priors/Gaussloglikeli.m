@@ -19,7 +19,7 @@ g=@(x)Green_Ampt_solution(x,psi,delta_theta,t);
 kh=theta(1);        % hydraulic conductivity in cm s^-1
 sig=theta(2);       % standard-deviation
 
-mu=g(kh);           % computation of infiltration at kh
+mu=g(kh);           % computation of cumulative infiltration at kh
 
 L=-0.5*log(2*pi)-log(sig)-(y0-mu)^2/2/sig^2; % computation of log-likelihood
 
