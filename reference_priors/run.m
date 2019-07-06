@@ -14,7 +14,7 @@ save_dir=['D:/Research/Thesis_work/Non_informative_priors'...
 d=2; % dimension of the data
 
 % read Bernardo's prior data
-fname='prior_density_data_initial_prior_2_07_04_2019';
+fname='prior_density_data_initial_prior_2_sig2=1_07_06_2019';
 filename=fullfile(save_dir,'results',fname);
 formatspec=repmat('%f',1,d+1);
 fid=fopen(filename,'r');
@@ -23,46 +23,49 @@ fclose(fid);
 Bernardo_pdf=[data{1},data{2},data{3}];
 
 % observed cumulative infiltration
-y0=3.17;            % in cm
+y0=1.2;            % in cm
+GLOBAL_DATA.y0=y0;
+kh_range=unique(Bernardo_pdf(:,1));
+sigma_range=unique(Bernardo_pdf(:,2));
 
-%% computation of marginal pdf of hydraulic conductivity K_h
-pdf_kh=sortrows(Bernardo_pdf,1);
-kh_range=unique(pdf_kh(:,1));
-
-for i=1:length(kh_range)
-    kh=kh_range(i);
-    ind=find(pdf_kh(:,1)==kh);
-    sigma=pdf_kh(ind,2);
-    base_area=sigma(2)-sigma(1);
-    pdf_temp=pdf_kh(ind,3);
-    pdf_temp(1)=pdf_temp(1)/2;
-    pdf_temp(end)=pdf_temp(end)/2;
-    marginal_pdf_values_kh(i)=sum(pdf_temp)*base_area;
-end
-break
-%% computation of marginal pdf of sigma
-pdf_sigma=sortrows(Bernardo_pdf,2);
-sigma_range=unique(pdf_sigma(:,2));
-
-% compute marginal pdf
-for i=1:length(sigma_range)
-    sigma=sigma_range(i);
-    ind=find(pdf_sigma(:,2)==sigma);
-    kh=pdf_sigma(ind,1);
-    base_area=kh(2)-kh(1);
-    pdf_temp=pdf_sigma(ind,3);
-    pdf_temp(1)=pdf_temp(1)/2;
-    pdf_temp(end)=pdf_temp(end)/2;
-    marginal_pdf_values_sigma(i)=base_area*sum(pdf_temp);
-end
-%% GLOBAL_DATA
 GLOBAL_DATA.Bernardo_pdf=Bernardo_pdf;
 GLOBAL_DATA.kh_range=kh_range;
 GLOBAL_DATA.sigma_range=sigma_range;
-GLOBAL_DATA.marginal_pdf_values_sigma=marginal_pdf_values_sigma;
-GLOBAL_DATA.marginal_pdf_values_kh=marginal_pdf_values_kh;
-GLOBAL_DATA.y0=y0;
 
+%% computation of marginal pdf of hydraulic conductivity K_h
+if length(sigma_range)>1
+    pdf_kh=sortrows(Bernardo_pdf,1);
+    for i=1:length(kh_range)
+        kh=kh_range(i);
+        ind=find(pdf_kh(:,1)==kh);
+        sigma=pdf_kh(ind,2);
+        base_area=sigma(2)-sigma(1);
+        pdf_temp=pdf_kh(ind,3);
+        pdf_temp(1)=pdf_temp(1)/2;
+        pdf_temp(end)=pdf_temp(end)/2;
+        marginal_pdf_values_kh(i)=sum(pdf_temp)*base_area;
+    end
+   GLOBAL_DATA.marginal_pdf_values_kh=marginal_pdf_values_kh;
+else
+    marginal_pdf_values_kh=Bernardo_pdf(:,3);
+    GLOBAL_DATA.marginal_pdf_values_kh=marginal_pdf_values_kh;
+end
+%% computation of marginal pdf of sigma
+if length(sigma_range)>1
+    pdf_sigma=sortrows(Bernardo_pdf,2);
+    % compute marginal pdf
+    for i=1:length(sigma_range)
+        sigma=sigma_range(i);
+        ind=find(pdf_sigma(:,2)==sigma);
+        kh=pdf_sigma(ind,1);
+        base_area=kh(2)-kh(1);
+        pdf_temp=pdf_sigma(ind,3);
+        pdf_temp(1)=pdf_temp(1)/2;
+        pdf_temp(end)=pdf_temp(end)/2;
+        marginal_pdf_values_sigma(i)=base_area*sum(pdf_temp);
+    end
+GLOBAL_DATA.marginal_pdf_values_sigma=marginal_pdf_values_sigma;
+end
 %% computation of posterior using DREAM
 %{
 
@@ -95,7 +98,7 @@ Par_info.prior=@(x)berpdf(x);
 
 %% computation of posterior using MATLAB mhsample
 %
-known_sigma=2;
+known_sigma=1;
 start=[0.04/3600];
 nsamples=10000;
 min_value=0.01/3600;                   
@@ -106,8 +109,8 @@ proprnd=@(x)unifrnd(min_value,max_value);
 smpl = mhsample(start,nsamples,'pdf',pdf,'proppdf',proppdf, 'proprnd',proprnd);
 
 % save the smpl file
-%{
-save_fname='Posterior_mhsample_Bernardo_prior_07_04_2019';
+%
+save_fname='kh_sigma=1_y0=1.2_Posterior_mhsample_bernardo_prior_07_06_2019';
 save_filename=fullfile(save_dir,save_fname);
 dlmwrite(save_filename,smpl);
 %}
