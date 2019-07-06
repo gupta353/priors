@@ -30,7 +30,7 @@ g=@(x)Green_Ampt_solution(x,psi,delta_theta,t);
 
 
 kh=(0.01:0.01:1)/3600;      % hydraulic conductivity values at which prior is to be evaluated
-sig2=1;       % variance values at which prior is to be evaluated 
+sig2=2;       % variance values at which prior is to be evaluated 
 
 % parameters of iniitial prior as mentioned in header
 gamma=0.01;     
@@ -87,7 +87,7 @@ xlabel('hydraulic conductivity (K, cm h^{-1})',...
 ylabel('prior density','fontname','arial','fontsize',12);
 clear box
 %
-sname='GA_prior_K_intital_prior_2_sig2=1_07_06_2019';
+sname='GA_prior_K_intital_prior_2_sig2=2_07_06_2019';
 save_filename=fullfile(save_dir,sname);
 print(save_filename,'-r300','-djpeg');
 %}
@@ -135,6 +135,6 @@ for i=1:length(kh)
         save_data(count,:)=[kh(i),sqrt(sig2(ii)),PI(i,ii)];
     end
 end
-fname='prior_density_data_initial_prior_2_sig2=1_07_06_2019';
+fname='prior_density_data_initial_prior_2_sig2=2_07_06_2019';
 save_filename=fullfile(save_dir,fname);
 dlmwrite(save_filename,save_data,',')
