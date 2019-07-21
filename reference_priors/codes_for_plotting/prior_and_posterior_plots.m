@@ -8,6 +8,7 @@ dir=['D:/Research/Thesis_work/Non_informative_priors'...
     '/matlab_codes/reference_priors'];
 
 %% prior plots
+%
 fname='prior_density_data_initial_prior_1_07_07_2019';
 filename=fullfile(dir,'results',fname);
 fid=fopen(filename,'r');
@@ -19,7 +20,7 @@ sig_range=unique(bernardo_prior(:,2));
 
 % density of hydraulic conductivity for each value of standard
 % deviation
-%
+%{
 sig_values=[0.1,0.5,1];
 colorspec={'r','g','b'};
 figure;
@@ -51,7 +52,7 @@ print(save_filename,'-r300','-djpeg');
 %}
 % density of standard deviation for each value of 
 % hydraulic conductivity
-%
+%{
 kh_values=[0.1,0.5,1];          % in cm h^-1
 colorspec={'r','g','b'};
 figure;
@@ -79,9 +80,9 @@ clear box
 sname='GA_prior_sigma_intital_prior_1_07_07_2019';
 save_filename=fullfile(dir,'plots',sname);
 print(save_filename,'-r300','-djpeg');
-
+%}
 % joint density of hydraulic conductivity and standard deviation
-%
+%{
 bernardo_prior=sortrows(bernardo_prior,2);
 [X,Y]=meshgrid(sig_range,kh_range);
 Z=reshape(bernardo_prior(:,3)',length(kh_range),length(sig_range));
@@ -99,6 +100,7 @@ clear box
 sname='GA_prior_joint_intital_prior_1_07_07_2019';
 save_filename=fullfile(dir,'plots',sname);
 print(save_filename,'-r300','-djpeg');
+%}
 %% chain plots
 %{
 sig2='2';
@@ -125,9 +127,9 @@ print(save_filename,'-r300','-djpeg')
 %}
 
 %% Posterior histogram
-%{
+%
 burn_in=2000;
-sig2='2';
+sig2='1';
 y0='3.17';
 fname=strcat(['kh_sig2=',sig2,'_y0=',y0,...
     '_Posterior_mhsample_bernardo_prior_07_06_2019']);
@@ -145,12 +147,18 @@ data=textscan(fid,'%f');
 fclose(fid);
 kh_unif=3600*data{1}(burn_in+1:end);            % in cm h^-1
 
-hist(kh_ber,20);
-hold on
-hist(kh_unif,20)
-h=findobj(gca,'Type','patch');
-set(h(1),'facecolor',[0.7,1,0.7],'edgecolor','w','facealpha',0.75)
-set(h(2),'facecolor',[1,0.4,0.4],'edgecolor','w','facealpha',0.75)
+% kernel density
+[f_ber,x_ber]=ksdensity(kh_ber,'support',[0,1.0001]);
+[f_unif,x_unif]=ksdensity(kh_unif,'support',[0,1.0001]);
+
+% hist(kh_ber,20);
+% hold on
+% hist(kh_unif,20)
+% h=findobj(gca,'Type','patch');
+% set(h(1),'facecolor',[0.7,1,0.7],'edgecolor','w','facealpha',0.75)
+% set(h(2),'facecolor',[1,0.4,0.4],'edgecolor','w','facealpha',0.75)
+
+plot(x_ber,f_ber,x_unif,f_unif,'linewidth',2);
 box('on');
 box.linewidth=2;
 set(gca,'fontname','arial','fontsize',14,'xlim',[0,1],box)
@@ -161,7 +169,7 @@ xlabel('K_h (cm h^{-1})','fontname','arial','fontsize',14);
 ylabel('count','fontname','arial','fontsize',14);
 
 fname=strcat(['kh_sig2=',sig2,'_y0=',y0,...
-    '_hist','_07_06_2019.jpeg']);
+    '_ksdensity','_07_06_2019.jpeg']);
 save_filename=fullfile(dir,'plots',fname);
 print(save_filename,'-r300','-djpeg');
 %}
