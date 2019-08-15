@@ -5,6 +5,8 @@
 %         delta_theta=porosity-intial mositure content
 %         H0=intial water level height from the surface (cm)
 % Outputs: Ft=cumulative infiltration at time t (cm)
+% reference: Schmidt, J. (2002). A model for transient flow to a subsurface
+%            tile drain. Chapter 2.
 
 function Ft=falling_head_Green_Ampt_solution(K,psi,delta_theta,H0,t)
 
