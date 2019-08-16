@@ -8,6 +8,8 @@
 function Ft=Green_Ampt_solution(K,psi,delta_theta,t)
 
 tol=0.000001;
+a=psi*delta_theta;
+Kt=K*t;
 
 if length(t)==1 % if t is a scalar
     
@@ -16,7 +18,7 @@ if length(t)==1 % if t is a scalar
 
     while abs(Ft_updated-Ft_old)>tol
         Ft_old=Ft_updated;
-        Ft_updated=K*t+psi*delta_theta*log(1+Ft_old/psi/delta_theta);
+        Ft_updated=Kt+a*log(1+Ft_old/a);
     end
 
     Ft=Ft_updated;
@@ -28,7 +30,7 @@ else  % it t is a vector
     
     while max(abs(Ft_updated-Ft_old))>tol
         Ft_old=Ft_updated;
-        Ft_updated=K*t+psi*delta_theta*log(1+Ft_old./psi/delta_theta);
+        Ft_updated=Kt+a*log(1+Ft_old./a);
 
     end
     Ft=Ft_updated;
