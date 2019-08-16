@@ -3,7 +3,7 @@
 % equal to that of nearest point at which pdf value is available
 % inputs: theta=row vector of parameters at which pdf is to be computed
 % outputs: pdf=Bernardo pdf value at a given point
-% global variables: GLOBAL_DATA=contains a metric Bernardo_pdf
+% global variables: GLOBAL_DATA=contains a metrix Bernardo_pdf
 % each row of Bernardo_pdf conatins a point in d-dimensional parameter
 % space in first d columns and the bernardo pdf of that point in (d+1)th
 % column
