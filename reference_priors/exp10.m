@@ -19,8 +19,8 @@ clc
 save_dir=['D:\Research\Thesis_work\Non_informative_priors',...
     '\matlab_codes\reference_priors\plots'];
 
-k=10000;          % number of samples to be drawn in each set
-m=100000;          % number of sets of samples to be drawn
+k=1000;          % number of samples to be drawn in each set
+m=10000;          % number of sets of samples to be drawn
 
 % other known parameters of Green-Ampt equation
 psi=16.68;          % (in cm)
@@ -30,7 +30,7 @@ g=@(x)Green_Ampt_solution(x,psi,delta_theta,t);
 
 
 kh=(0.01:0.01:1)/3600;      % hydraulic conductivity values at which prior is to be evaluated
-sig2=2;       % variance values at which prior is to be evaluated 
+sig2=0.01:0.01:1;       % variance values at which prior is to be evaluated 
 
 % parameters of iniitial prior as mentioned in header
 gamma=0.01;     
@@ -38,9 +38,11 @@ alpha=5;
 beta=0.0001;
 mu0=10;
 
+E_log_asymp_post=nan(length(kh),length(sig2));
 for i=1:length(kh)
     for ii=1:length(sig2)
         
+        log_asymp_post=nan(1,m);
         for j=1:m
             mu_tmp=g(kh(i));
             sig2_tmp=sig2(ii);
@@ -65,6 +67,7 @@ end
 PI=exp(E_log_asymp_post-sum(sum(E_log_asymp_post))/length(sig2)/length(kh));     
 
 if length(sig2)>1                       % check if the prior is computed for more than one sigma values
+    A1=nan(1,length(sig2));
     for i=1:length(sig2)
         A1(i)=trapz(kh,PI(:,i));                                                            
     end
@@ -87,13 +90,13 @@ xlabel('hydraulic conductivity (K, cm h^{-1})',...
 ylabel('prior density','fontname','arial','fontsize',12);
 clear box
 %
-sname='GA_prior_K_intital_prior_2_sig2=2_07_06_2019';
+sname='GA_prior_K_intital_prior_2_08_15_2019';
 save_filename=fullfile(save_dir,sname);
 print(save_filename,'-r300','-djpeg');
 %}
 % density of standard deviation for each value of 
 % hydraulic conductivity
-%{
+%
 plot(sqrt(sig2),PI(1:floor(end/2)-1:end,:),'linewidth',2)
 box('on');
 box.linewidth=2;
@@ -102,13 +105,13 @@ xlabel('standard deviation (\sigma)',...
     'fontname','arial','fontsize',12);
 ylabel('prior density','fontname','arial','fontsize',12);
 %
-sname='GA_prior_sigma_intital_prior_2_07_05_2019';
+sname='GA_prior_sigma_intital_prior_2_08_15_2019';
 save_filename=fullfile(save_dir,sname);
 print(save_filename,'-r300','-djpeg');
 
 %}
 % joint density of hydraulic conductivity and standard deviation
-%{
+%
 [X,Y]=meshgrid(sqrt(sig2),3600*kh');
 surf(X,Y,PI,'LineStyle','none','facealpha',0.8)
 colorbar;
@@ -120,7 +123,7 @@ zlabel('prior density','fontname','arial','fontsize',12);
 set(gca,'fontname','arial','fontsize',12)
 clear box
 %
-sname='GA_prior_joint_intital_prior_2_07_05_2019';
+sname='GA_prior_joint_intital_prior_2_08_15_2019';
 save_filename=fullfile(save_dir,sname);
 print(save_filename,'-r300','-djpeg');
 %}
@@ -129,12 +132,13 @@ print(save_filename,'-r300','-djpeg');
 % reformat the data such that every row contains point in multi-dimensional
 % space and corresponding Bernardo's density
 count=0;
+save_data=nan(length(kh)*length(sig2),3);
 for i=1:length(kh)
     for ii=1:length(sig2)
         count=count+1;
         save_data(count,:)=[kh(i),sqrt(sig2(ii)),PI(i,ii)];
     end
 end
-fname='prior_density_data_initial_prior_2_sig2=2_07_06_2019';
+fname='prior_density_data_initial_prior_2_08_15_2019';
 save_filename=fullfile(save_dir,fname);
 dlmwrite(save_filename,save_data,',')
