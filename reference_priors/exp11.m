@@ -2,6 +2,8 @@
 % dataset, using only one sample; change in water content \Delta\theta is
 % assumed to be known
 % Refs: Green-Ampt model: Chow et al. (1988)
+%             Schmidt, J. (2002). A model for transient flow to a subsurface tile
+%             drain. Chapter 2. Masters Thesis
 %       
 %       Data: Stillman, J.S., N.W. Haws, R.S. Govindaraju, and P.S.C. Rao (2006).
 %             “A model for transient flow to a subsurface tile drain under
@@ -20,14 +22,14 @@ save_dir=['D:/Research/Thesis_work/Non_informative_priors',...
 k=1000;          % number of samples to be drawn in each set
 m=10000;          % number of sets of samples to be drawn
 
-% other known parameters of Green-Ampt equation
+% other known parameters of Green-Ampt equation for outer ring data
 psi=50;          % (in cm)
 delta_theta=0.004787;  % change in moisture content
-t=3600;             % time at which infiltration is computed (in s)
+t=1148;             % time at which infiltration is computed (in s)
 H0=13.7;            % Intital water surface level from ground (cm)
 
-kh=(0.1:0.1:1)/3600;      % hydraulic conductivity values (in cm h^-1) at which the prior is to be evaluated
-sig2=0.1:0.1:0.5;           % variance values (cumulatve infiltration) at which prior is to be evaluated
+kh=(0.1:0.1:50)/3600;      % hydraulic conductivity values (in cm s^-1) at which the prior is to be evaluated
+sig2=1;           % variance values (cumulatve infiltration) at which prior is to be evaluated
 
 for i=1:length(kh)
     for ii=1:length(sig2)
@@ -78,13 +80,14 @@ xlabel('hydraulic conductivity (K_h, cm h^{-1})',...
     'fontname','arial','fontsize',12);
 ylabel('prior density','fontname','arial','fontsize',12);
 
-sname='FHGA_prior_K_intital_prior_1_08_16_2019';
+sname='FHGA_prior_K_intital_prior_1_sig2=1_08_16_2019';
 save_filename=fullfile(save_dir,sname);
 print(save_filename,'-r300','-djpeg');
 clear box
 
 % density of standard deviation for each value of 
 % hydraulic conductivity
+%{
 plot(sqrt(sig2),PI(1:floor(end/2)-1:end,:),'linewidth',2)
 box('on');
 box.linewidth=2;
@@ -93,12 +96,14 @@ xlabel('standard deviation (\sigma, cm) ',...
     'fontname','arial','fontsize',12);
 ylabel('prior density','fontname','arial','fontsize',12);
 
-sname='FHGA_prior_sigma_intital_prior_1_08_16_2019';
+sname='FHGA_prior_sigma_intital_prior_1_sig2=2_08_16_2019';
 save_filename=fullfile(save_dir,sname);
 print(save_filename,'-r300','-djpeg');
 clear box
+%}
 
 % joint density of hydraulic conductivity and standard deviation
+%{
 [X,Y]=meshgrid(sqrt(sig2),3600*kh');
 surf(X,Y,PI,'LineStyle','none','facealpha',0.8)
 colorbar;
@@ -109,7 +114,7 @@ ylabel(' K_h (cm h^{-1})',...
 zlabel('prior density','fontname','arial','fontsize',12);
 set(gca,'fontname','arial','fontsize',12)
 
-sname='FHGA_prior_joint_intital_prior_1_08_16_2019';
+sname='FHGA_prior_joint_intital_prior_1_sig2=2_08_16_2019';
 save_filename=fullfile(save_dir,sname);
 print(save_filename,'-r300','-djpeg');
 %}
@@ -125,6 +130,6 @@ for i=1:length(kh)
         save_data(count,:)=[kh(i),sqrt(sig2(ii)),PI(i,ii)];
     end
 end
-fname='FHGA_prior_density_data_initial_prior_1_08_16_2019';
+fname='FHGA_prior_density_data_initial_prior_1_sig2=1_08_16_2019';
 save_filename=fullfile(save_dir,fname);
 dlmwrite(save_filename,save_data,',')
