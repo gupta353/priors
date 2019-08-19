@@ -9,6 +9,6 @@
 function der=Green_Ampt_der(K,psi,delta_theta,t)
 
 Ft=Green_Ampt_solution(K,psi,delta_theta,t);
-der=t.*(psi*delta_theta/Ft+1);
+der=t.*(psi*delta_theta./Ft+1);
 
 end
