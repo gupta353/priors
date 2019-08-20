@@ -19,7 +19,7 @@ a_by_b=a/b;
 if length(t)==1 % if t is a scalar
     
     Ft_old=-inf;
-    Ft_updated=Kt;
+    Ft_updated=sqrt(2*Kt/a_by_b);;
 
     while abs(Ft_updated-Ft_old)>tol
         Ft_old=Ft_updated;
@@ -31,7 +31,7 @@ if length(t)==1 % if t is a scalar
 else  % it t is a vector
     
     Ft_old=-inf*length(t);
-    Ft_updated=Kt;
+    Ft_updated=sqrt(2*Kt/a_by_b);
     
     while max(abs(Ft_updated-Ft_old))>tol
         Ft_old=Ft_updated;
