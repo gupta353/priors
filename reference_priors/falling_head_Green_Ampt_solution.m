@@ -10,18 +10,20 @@
 
 function Ft=falling_head_Green_Ampt_solution(K,psi,delta_theta,H0,t)
 
-tol=0.000001;   % convregence-error tolerance 
+tol=0.001;   % convregence-error tolerance 
 a=1-delta_theta;
 b=(H0+psi)*delta_theta;
+Kt=a*K*t;
+a_by_b=a/b;
 
 if length(t)==1 % if t is a scalar
     
     Ft_old=-inf;
-    Ft_updated=a*K*t;
+    Ft_updated=Kt;
 
     while abs(Ft_updated-Ft_old)>tol
         Ft_old=Ft_updated;
-        Ft_updated=a*K*t+(b/a)*log(1+a*Ft_old/b);
+        Ft_updated=Kt+log(1+a_by_b*Ft_old)/a_by_b;
     end
 
     Ft=Ft_updated;
@@ -29,11 +31,11 @@ if length(t)==1 % if t is a scalar
 else  % it t is a vector
     
     Ft_old=-inf*length(t);
-    Ft_updated=a*K*t;
+    Ft_updated=Kt;
     
     while max(abs(Ft_updated-Ft_old))>tol
         Ft_old=Ft_updated;
-        Ft_updated=a*K*t+(b/a)*log(1+a*Ft_old/b);
+        Ft_updated=Kt+log(1+a_by_b*Ft_old)/a_by_b;
     end
     Ft=Ft_updated;
 end
