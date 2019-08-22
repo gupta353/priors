@@ -20,9 +20,9 @@ save_dir=['D:/Research/Thesis_work/Non_informative_priors',...
     '/matlab_codes/reference_priors/'];
 
 k=1000;          % number of samples to be drawn in each set
-m=1500;          % number of sets of samples to be drawn
-unif_integration_samples=10000;
-                
+m=3000;          % number of sets of samples to be drawn
+unif_integration_samples=1000;
+
 % raed the data
 fname='Infiltrometer_A_outer_ring.txt';
 filename=fullfile(save_dir,'data','infiltration_data',fname);
@@ -37,7 +37,7 @@ psi=50;          % (in cm)
 delta_theta=0.004787;  % change in moisture content
 H0=13.7;            % Intital water surface level from ground (cm)
 g=@(x)falling_head_Green_Ampt_solution(x,psi,...        % a fucntion handle for Green-Ampt model
-                delta_theta,H0,t);
+    delta_theta,H0,t);
 
 kh=(0.1)/3600;      % hydraulic conductivity values (in cm s^-1) at which the prior is to be evaluated
 sig2=1;           % variance values (cumulatve infiltration) at which prior is to be evaluated
@@ -46,37 +46,36 @@ min_kh=0.1/3600;
 % Computation of Green-Ampt solutions for uniforml drawn samples of
 % hyfraulic conuctivity
 
- unif_samp=min_kh:(max_kh-min_kh)/unif_integration_samples:max_kh;
- for infil_i=1:unif_integration_samples
-     infil(infil_i,:)=g(unif_samp(infil_i));
- end
+unif_samp=min_kh:(max_kh-min_kh)/unif_integration_samples:max_kh;
+infil=nan(unif_integration_samples,length(t));
+for infil_i=1:unif_integration_samples
+    infil(infil_i,:)=g(unif_samp(infil_i));
+end
 
+E_log_asymp_post=nan(length(kh),length(sig2));
 for i=1:length(kh)
     for ii=1:length(sig2)
         
-         K=kh(i);
-         mu_tmp=g(K);                         % mean of the distribution
-         sig2_tmp=sig2(ii);                              % variance of the distribution
-         sigma=diag(sqrt(sig2_tmp)*ones(length(t),1));   % element-wise square root of covariance matrix
-            
+        K=kh(i);
+        mu_tmp=g(K);                         % mean of the distribution
+        sig2_tmp=sig2(ii);                              % variance of the distribution
+        sigma=diag(sqrt(sig2_tmp)*ones(length(t),1));   % element-wise square root of covariance matrix
+        
+        log_asymp_post=nan(1,m);
         for j=1:m
-           
-            samps=mvnrnd(mu_tmp,sigma,k);               % k samples drawn from the distributiion  
+            
+            samps=mvnrnd(mu_tmp,sigma,k);               % k samples drawn from the distributiion
             tmp_matrix=bsxfun(@minus,samps,mu_tmp');
             tmp_matrix=tmp_matrix.^2;
             T1=sum(tmp_matrix(:));
             T1=-1/2/sig2_tmp*T1;
             
-%             fun=@(theta)-1/2/sig2_tmp*...
-%                 sum(sum(...
-%                 (bsxfun(@minus,samps,g(theta)').^2)...
-%                 ));
-           
+            q=nan(1,unif_integration_samples);
             for fun_i=1:unif_integration_samples
-                q(fun_i)=exp(-1/2/sig2_tmp*...
-                sum(sum(...
-                (bsxfun(@minus,samps,infil(fun_i,:)).^2)...
-                ))-T1);
+                tmp_matrix=bsxfun(@minus,samps,infil(fun_i,:));
+                tmp_matrix=tmp_matrix.*tmp_matrix;
+                q_tmp=(-1/2/sig2*sum(tmp_matrix(:)));
+                q(fun_i)=exp(q_tmp);
             end
             q(1)=q(1)/2; q(end)=q(end)/2;
             T2=T1+log(((max_kh-min_kh)/unif_integration_samples)*sum(q));
