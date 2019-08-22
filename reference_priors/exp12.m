@@ -46,7 +46,7 @@ min_kh=0.1/3600;
 % Computation of Green-Ampt solutions for uniforml drawn samples of
 % hyfraulic conuctivity
 
- unif_samp=unifrnd(min_kh,max_kh,[unif_integration_samples,1]);
+ unif_samp=min_kh:(max_kh-min_kh)/unif_integration_samples:max_kh;
  for infil_i=1:unif_integration_samples
      infil(infil_i,:)=g(unif_samp(infil_i));
  end
@@ -73,15 +73,15 @@ for i=1:length(kh)
 %                 ));
            
             for fun_i=1:unif_integration_samples
-                q(fun_i)=-1/2/sig2_tmp*...
+                q(fun_i)=exp(-1/2/sig2_tmp*...
                 sum(sum(...
                 (bsxfun(@minus,samps,infil(fun_i,:)).^2)...
-                ));
+                ))-T1);
             end
+            q(1)=q(1)/2; q(end)=q(end)/2;
+            T2=T1+log(((max_kh-min_kh)/unif_integration_samples)*sum(q));
             
-            T2=log((max_kh-min_kh)/unif_integration_samples)+max(q)+log(sum(exp(q-max(q))));
-            
-            log_asymp_post(j)=T1+T2;        % log of asymptotic posterior at the given point in parameter space
+            log_asymp_post(j)=T1-T2;        % log of asymptotic posterior at the given point in parameter space
         end
         E_log_asymp_post(i,ii)=sum(log_asymp_post)/m;                   % expectation of log of asymptotic posterior at the given point in parameter space
     end
