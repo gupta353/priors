@@ -75,7 +75,7 @@ for i=1:length(kh)
                 tmp_matrix=bsxfun(@minus,samps,infil(fun_i,:));
                 tmp_matrix=tmp_matrix.*tmp_matrix;
                 q_tmp=(-1/2/sig2*sum(tmp_matrix(:)));
-                q(fun_i)=exp(q_tmp);
+                q(fun_i)=exp(q_tmp-T1);
             end
             q(1)=q(1)/2; q(end)=q(end)/2;
             T2=T1+log(((max_kh-min_kh)/unif_integration_samples)*sum(q));
