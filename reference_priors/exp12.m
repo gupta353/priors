@@ -20,8 +20,8 @@ save_dir=['D:/Research/Thesis_work/Non_informative_priors',...
     '/matlab_codes/reference_priors/'];
 
 k=1000;          % number of samples to be drawn in each set
-m=1000;          % number of sets of samples to be drawn
-unif_integration_samples=500;
+m=1500;          % number of sets of samples to be drawn
+unif_integration_samples=10000;
                 
 % raed the data
 fname='Infiltrometer_A_outer_ring.txt';
@@ -30,6 +30,7 @@ fid=fopen(filename,'r');
 data=textscan(fid,'%f%f','delimiter','\t','headerlines',1);
 fclose(fid);
 t=data{1};              % time-steps (in secs) at which data is available
+t=[t(2);t(3);t(4)];
 
 % other known parameters of Green-Ampt equation for outer ring data
 psi=50;          % (in cm)
@@ -38,8 +39,17 @@ H0=13.7;            % Intital water surface level from ground (cm)
 g=@(x)falling_head_Green_Ampt_solution(x,psi,...        % a fucntion handle for Green-Ampt model
                 delta_theta,H0,t);
 
-kh=(1)/3600;      % hydraulic conductivity values (in cm s^-1) at which the prior is to be evaluated
+kh=(0.1)/3600;      % hydraulic conductivity values (in cm s^-1) at which the prior is to be evaluated
 sig2=1;           % variance values (cumulatve infiltration) at which prior is to be evaluated
+max_kh=1/3600;
+min_kh=0.1/3600;
+% Computation of Green-Ampt solutions for uniforml drawn samples of
+% hyfraulic conuctivity
+
+ unif_samp=unifrnd(min_kh,max_kh,[unif_integration_samples,1]);
+ for infil_i=1:unif_integration_samples
+     infil(infil_i,:)=g(unif_samp(infil_i));
+ end
 
 for i=1:length(kh)
     for ii=1:length(sig2)
@@ -57,15 +67,19 @@ for i=1:length(kh)
             T1=sum(tmp_matrix(:));
             T1=-1/2/sig2_tmp*T1;
             
-            fun=@(theta)-1/2/sig2_tmp*...
+%             fun=@(theta)-1/2/sig2_tmp*...
+%                 sum(sum(...
+%                 (bsxfun(@minus,samps,g(theta)').^2)...
+%                 ));
+           
+            for fun_i=1:unif_integration_samples
+                q(fun_i)=-1/2/sig2_tmp*...
                 sum(sum(...
-                (bsxfun(@minus,samps,g(theta)').^2)...
+                (bsxfun(@minus,samps,infil(fun_i,:)).^2)...
                 ));
-            unif_samp=unifrnd(min(kh),max(kh),[unif_integration_samples,1]);
-            for fun_i=1:length(unif_samp)
-                q(fun_i)=fun(unif_samp(fun_i));
             end
-            T2=log(max(kh)-min(kh)/unif_integration_samples)+max(q);
+            
+            T2=log((max_kh-min_kh)/unif_integration_samples)+max(q)+log(sum(exp(q-max(q))));
             
             log_asymp_post(j)=T1+T2;        % log of asymptotic posterior at the given point in parameter space
         end
