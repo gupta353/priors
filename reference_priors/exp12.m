@@ -30,7 +30,7 @@ fid=fopen(filename,'r');
 data=textscan(fid,'%f%f','delimiter','\t','headerlines',1);
 fclose(fid);
 t=data{1};              % time-steps (in secs) at which data is available
-t=[t(2);t(3);t(4)];
+t(1)=[];                % remove t=0
 
 % other known parameters of Green-Ampt equation for outer ring data
 psi=50;          % (in cm)
@@ -39,12 +39,12 @@ H0=13.7;            % Intital water surface level from ground (cm)
 g=@(x)falling_head_Green_Ampt_solution(x,psi,...        % a fucntion handle for Green-Ampt model
     delta_theta,H0,t);
 
-kh=(0.1)/3600;      % hydraulic conductivity values (in cm s^-1) at which the prior is to be evaluated
+kh=(0.1:0.1:50)/3600;      % hydraulic conductivity values (in cm s^-1) at which the prior is to be evaluated
 sig2=1;           % variance values (cumulatve infiltration) at which prior is to be evaluated
-max_kh=1/3600;
-min_kh=0.1/3600;
-% Computation of Green-Ampt solutions for uniforml drawn samples of
-% hyfraulic conuctivity
+max_kh=50.1/3600;
+min_kh=0.01/3600;
+% Computation of Green-Ampt solutions for uniformly drawn samples of
+% hydraulic conuctivity
 
 unif_samp=min_kh:(max_kh-min_kh)/unif_integration_samples:max_kh;
 infil=nan(unif_integration_samples,length(t));
@@ -62,7 +62,7 @@ for i=1:length(kh)
         sigma=diag(sqrt(sig2_tmp)*ones(length(t),1));   % element-wise square root of covariance matrix
         
         log_asymp_post=nan(1,m);
-        for j=1:m
+        parfor j=1:m
             
             samps=mvnrnd(mu_tmp,sigma,k);               % k samples drawn from the distributiion
             tmp_matrix=bsxfun(@minus,samps,mu_tmp');
@@ -85,3 +85,41 @@ for i=1:length(kh)
         E_log_asymp_post(i,ii)=sum(log_asymp_post)/m;                   % expectation of log of asymptotic posterior at the given point in parameter space
     end
 end
+
+% unnormalized density
+mean_E_log_asymp_post=sum(E_log_asymp_post(:))/numel(E_log_asymp_post);
+PI=exp(E_log_asymp_post-mean_E_log_asymp_post);
+
+%% normalized density 
+% computation of normalizing contant using trapezoidal integration
+if length(sig2)==1 % if the sigma is assumed to be known
+    Y=PI;
+    Y(1)=Y(1)/2; Y(end)=Y(end)/2;
+    X=kh;
+    A=sum(Y)*(kh(2)-kh(1));    % normalizing constant
+else
+    Y=PI;
+    for kh_ind=1:length(sig2)
+        tmp_Y=Y(:,1);
+        tmp_Y(1)=tmp_Y(1)/2; tmp_Y(end)=tmp_Y(end)/2;
+        A1(kh_ind)=(kh(2)-kh(1))*sum(tmp_Y);
+    end
+    A1(1)=A1(1)/2; A1(end)=A1(end)/2;
+    A=sum(A1)*(sig2(2)-sig2(1));  % normalizing constant
+end
+
+% normalized density
+PI=PI/A;            
+plot(kh*3600,PI(:,1));
+
+% write the data
+wfname='FHGA_prior_kh_sig2=2_09_02_2019';
+write_filename=fullfile(save_dir,'results/onwards_august_2019',wfname);
+fid=fopen(write_filename,'wt');
+for i=1:length(kh)
+    for ii=1:length(sig2)
+        fprintf(fid,'%f\t%f\t%f\n',kh(i),sqrt(sig2(ii)),PI(i,ii),'delimiter','\t');
+    end
+end
+fclose(fid);
+
