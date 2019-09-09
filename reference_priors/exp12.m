@@ -1,6 +1,7 @@
-% This routine computes Bernado prior on hydrualic conductivity and
-% statndard deviation such that cumulative infiltration data available at
-% multiple time-steps is utilized
+% This routine computes Bernardo prior on hydrualic conductivity
+% such that cumulative infiltration data available at
+% multiple time-steps is utilized; Gaussian likelihood with known sigma is
+% assumed
 % Refs: Green-Ampt model: Chow et al. (1988)
 %             Schmidt, J. (2002). A model for transient flow to a subsurface tile
 %             drain. Chapter 2. Masters Thesis
@@ -40,8 +41,8 @@ g=@(x)falling_head_Green_Ampt_solution(x,psi,...        % a fucntion handle for 
     delta_theta,H0,t);
 
 kh=(0.1:0.1:50)/3600;      % hydraulic conductivity values (in cm s^-1) at which the prior is to be evaluated
-sig2=1;           % variance values (cumulatve infiltration) at which prior is to be evaluated
-max_kh=50.1/3600;
+sig2=0.1;           % variance values (cumulatve infiltration) at which prior is to be evaluated
+max_kh=51/3600;
 min_kh=0.01/3600;
 % Computation of Green-Ampt solutions for uniformly drawn samples of
 % hydraulic conuctivity
@@ -54,9 +55,11 @@ end
 
 E_log_asymp_post=nan(length(kh),length(sig2));
 for i=1:length(kh)
+    K=kh(i);
+    disp(num2str(K*3600))
     for ii=1:length(sig2)
         
-        K=kh(i);
+
         mu_tmp=g(K);                         % mean of the distribution
         sig2_tmp=sig2(ii);                              % variance of the distribution
         sigma=diag(sqrt(sig2_tmp)*ones(length(t),1));   % element-wise square root of covariance matrix
@@ -74,7 +77,7 @@ for i=1:length(kh)
             for fun_i=1:unif_integration_samples
                 tmp_matrix=bsxfun(@minus,samps,infil(fun_i,:));
                 tmp_matrix=tmp_matrix.*tmp_matrix;
-                q_tmp=(-1/2/sig2*sum(tmp_matrix(:)));
+                q_tmp=(-1/2/sig2_tmp*sum(tmp_matrix(:)));
                 q(fun_i)=exp(q_tmp-T1);
             end
             q(1)=q(1)/2; q(end)=q(end)/2;
@@ -113,12 +116,12 @@ PI=PI/A;
 plot(kh*3600,PI(:,1));
 
 % write the data
-wfname='FHGA_prior_kh_sig2=2_09_02_2019';
+wfname='FHGA_prior_kh_sig2=0.1_09_02_2019';
 write_filename=fullfile(save_dir,'results/onwards_august_2019',wfname);
-fid=fopen(write_filename,'wt');
+fid=fopen(write_filename,'w');
 for i=1:length(kh)
     for ii=1:length(sig2)
-        fprintf(fid,'%f\t%f\t%f\n',kh(i),sqrt(sig2(ii)),PI(i,ii),'delimiter','\t');
+        fprintf(fid,'%f\t%f\t%f\n',kh(i),sqrt(sig2(ii)),PI(i,ii));
     end
 end
 fclose(fid);
