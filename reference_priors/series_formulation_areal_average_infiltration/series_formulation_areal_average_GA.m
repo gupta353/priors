@@ -64,7 +64,7 @@ for t_ind=1:length(t)
         
         % semi-analytrical implementation (from Govindaraju et al., 2001, p. 153)
         Kc_temp=Kc(t_ind);
-        r_temp=r(t_ind)'
+        r_temp=r(t_ind);
         tp=(Kc_temp/2)*psi*delta_theta/r_temp/(r_temp-Kc_temp/2);
         t_temp=t(t_ind);
         
