@@ -11,6 +11,15 @@
 
 function I=series_formulation_areal_average_GA(mu_ks,sigma_ks,psi,delta_theta,r,t)
 
+% check if r is a scalar, if yes convert into a vector of length equal to
+% t with the same value of each element, otherwise compute average
+% rainfall rate upto each time-step
+if length(r)==1
+    r=r*ones(length(t),1);
+else
+    r=cumsum(r)./(1:length(r));
+end
+
 % computation of central moments of y=log(Ks)
 mu_y=log(mu_ks/(1+(sigma_ks/mu_ks)^2)^0.5); % mean
 sigma_y=(log(1+(sigma_ks/mu_ks)^2))^0.5;    % standard deviation
@@ -55,7 +64,8 @@ for t_ind=1:length(t)
         
         % semi-analytrical implementation (from Govindaraju et al., 2001, p. 153)
         Kc_temp=Kc(t_ind);
-        tp=(Kc_temp/2)*psi*delta_theta/r/(r-Kc_temp/2);
+        r_temp=r(t_ind)'
+        tp=(Kc_temp/2)*psi*delta_theta/r_temp/(r_temp-Kc_temp/2);
         t_temp=t(t_ind);
         
         F(t_ind)=r*tp...
@@ -73,7 +83,7 @@ end
 
 % E_T2=mean(T2);
 
-I=r*(1-mu_omega)+T2;
+I=r.*(1-mu_omega)+T2;
 end
 
 function lnm=log_normal_moment(Kc,mu_y,sigma_y,order)
