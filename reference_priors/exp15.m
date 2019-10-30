@@ -40,7 +40,7 @@ for mu_ind=1%:length(mu_range)
                     for int_ii=1:length(mu_int)
                         
                         mu_int_tmp=mu_int(int_ii);
-                        SS_beta(int_ii)=sum(((samps-mu_int_tmp).^2).^beta_int_tmp);
+                        SS_beta(int_ii)=sum((abs(samps-mu_int_tmp)).^(2*beta_int_tmp));
                         
                     end
                     sum_scaled_SS_beta=(SS_beta/min(SS_beta)).^(-(k-1)/2/beta_int_tmp);
@@ -66,7 +66,7 @@ for mu_ind=1%:length(mu_range)
                     0.5*SS_beta/phi_tmp^(2*beta_tmp)-log_I;
             end
             
-            E_log_asymp_post=mean(log_asymp_post);
+            E_log_asymp_post=sum(log_asymp_post)/length(log_asymp_post);
             PI(count,:)=[mu_tmp,phi_tmp,beta_tmp,E_log_asymp_post];
         end
     end
