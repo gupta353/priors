@@ -76,5 +76,4 @@ for i=1:length(segment)
     end
 end
 
-hist(y)
 end
