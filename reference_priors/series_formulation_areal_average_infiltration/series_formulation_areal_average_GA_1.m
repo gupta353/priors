@@ -5,6 +5,7 @@
 % Distribution of hydraulic conductivity is assumed to be lognormal
 % inputs: mu_ks = mean parameter of the lognormal distribution
 %         sigma_ks = standard deviation of the lognormal distribution
+%         psi = water front suction head (in mm)
 %         delta_moisture = change in moisture content as the water-front
 %         penetrates the soil
 %         n_ks = number of samples of hydraulic conductivity to be drawn
@@ -13,7 +14,7 @@
 %         t = time steps between which rainfall rate is available
 % output: I=infiltration rate during each time-interval
 
-function [I]=series_formulation_areal_average_GA_1(mu_ks,sigma_ks,delta_theta,n_ks,r,t)
+function [I]=series_formulation_areal_average_GA_1(mu_ks,sigma_ks,psi,delta_theta,n_ks,r,t)
 
 mu_y=log(mu_ks/(1+(sigma_ks/mu_ks)^2)^0.5); % mean of log(Ks)
 sigma_y=(log(1+(sigma_ks/mu_ks)^2))^0.5;    % standard deviation of log(Ks)
@@ -76,8 +77,4 @@ for t_ind=2:length(t)       % loop for each time-interval
 end
 
 I=r.*(1-mu_omega)+mean(T2);     % Ilfiltration rate during each time-interval
-scatter(obs,I,'filled');
-hold on
-xlim([0 max([obs,I])+1]); ylim([0 max([obs,I])+1]);
-plot([0 max([obs,I])+1],[0 max([obs,I]+1)],'color','black')
 end
