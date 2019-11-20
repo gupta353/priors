@@ -35,6 +35,8 @@ mu_omega=1-0.5*erfc((log(Kc)-mu_y)./sigma_y/2^0.5);
 % y_samps1=normrnd(mu_y,sigma_y,n_ks,1);     % random samples of y=ln(x)
 y_samps=mu_y+sigma_y*normal_standard;
 K_samps=exp(y_samps);                     % random samples of Ks
+K_samps_psi_delta_theta=(2*K_samps*psi_delta_theta).^0.5;
+K_samps_cu_by_delta_theta=(2*K_samps.^3/psi_delta_theta).^0.5;
 
 %
 F=zeros(n_ks,length(t)-1);            % cumulative infiltration at each value of hydraulic conductivity, at the end of each time-interval
@@ -56,9 +58,9 @@ for t_ind=2:length(t)       % loop for each time-interval
     tp(ind)=t(t_ind-1)+(Fp(ind)-F(ind,t_ind-1))/r_tmp;
     
     F(ind,t_ind)=Fp(ind)+...
-        (2*K_samps(ind)*psi_delta_theta).^0.5.*(t_tmp^0.5-tp(ind).^0.5)+...
+        K_samps_psi_delta_theta(ind).*(t_tmp^0.5-tp(ind).^0.5)+...
         2/3*K_samps(ind).*(t_tmp-tp(ind))+...
-        1/18*(2*K_samps(ind).^3/psi_delta_theta).^0.5.*(t_tmp^1.5-tp(ind).^1.5);
+        1/18*K_samps_cu_by_delta_theta(ind).*(t_tmp^1.5-tp(ind).^1.5);
     
     ind_zero=K_samps>Kc_tmp;
     F(ind_zero)=F_tmp(ind_zero);
@@ -69,6 +71,9 @@ for t_ind=2:length(t)       % loop for each time-interval
     EI_np(ind_tmp,t_ind-1)=r_tmp;
     EI_np(ind_zero,t_ind-1)=0;
     
+    ind_zero=[];
+    ind_tmp=[];
+    ind=[];
     
     % same algorithm implemented in for loop: for readability
     %{
@@ -115,5 +120,5 @@ for t_ind=2:length(t)       % loop for each time-interval
 
 end
 
-I=r.*(1-mu_omega)+mean(EI_np);     % Infiltration rate during each time-interval
+I=r.*(1-mu_omega)+sum(EI_np)/n_ks;     % Infiltration rate during each time-interval
 end
