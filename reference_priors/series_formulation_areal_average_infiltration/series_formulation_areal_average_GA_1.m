@@ -38,38 +38,67 @@ K_samps=exp(y_samps);                     % random samples of Ks
 
 %
 F=zeros(n_ks,length(t)-1);            % cumulative infiltration at each value of hydraulic conductivity, at the end of each time-interval
-EI_np=zeros(n_ks,length(t)-1);           % 
+EI_np=zeros(n_ks,length(t)-1);           %
+Fp=zeros(n_ks,1);
+tp=zeros(n_ks,1);
 
 for t_ind=2:length(t)       % loop for each time-interval
     
     t_tmp=t(t_ind);
     r_tmp=r(t_ind-1);
     Kc_tmp=Kc(t_ind-1);
-    indices_r=zeros(n_ks,1);
+    
     rainfall_depth_tmp=r_tmp*(t_tmp-t(t_ind-1));
+    
+    ind=K_samps<Kc_tmp;
+    F_tmp=F(:,t_ind-1)+rainfall_depth_tmp;
+    Fp(ind)=K_samps(ind)*psi_delta_theta./(r_tmp-K_samps(ind));
+    tp(ind)=t(t_ind-1)+(Fp(ind)-F(ind,t_ind-1))/r_tmp;
+    
+    F(ind,t_ind)=Fp(ind)+...
+        (2*K_samps(ind)*psi_delta_theta).^0.5.*(t_tmp^0.5-tp(ind).^0.5)+...
+        2/3*K_samps(ind).*(t_tmp-tp(ind))+...
+        1/18*(2*K_samps(ind).^3/psi_delta_theta).^0.5.*(t_tmp^1.5-tp(ind).^1.5);
+    
+    ind_zero=K_samps>Kc_tmp;
+    F(ind_zero)=F_tmp(ind_zero);
+    
+    EI_np(:,t_ind-1)=K_samps.*(1+psi_delta_theta./F(:,t_ind));
+    ind_tmp=Fp>F_tmp;
+    F(ind_tmp,t_ind)=F_tmp(ind_tmp);
+    EI_np(ind_tmp,t_ind-1)=r_tmp;
+    EI_np(ind_zero,t_ind-1)=0;
+    
+    
+    % same algorithm implemented in for loop: for readability
+    %{
+     t_tmp=t(t_ind);
+    r_tmp=r(t_ind-1);
+    Kc_tmp=Kc(t_ind-1);
+    indices_r=[];
     
     % compute cumulative infiltration at the end of each time-step for
     % different values of Ks
     for K_ind=1:length(K_samps)     % loop for each value of K in K_samps
-        
         K_tmp=K_samps(K_ind);
-        F_tmp=F(K_ind,t_ind-1)+rainfall_depth_tmp;
+        F_tmp=F(K_ind,t_ind-1)+r_tmp*(t_tmp-t(t_ind-1));
         if K_tmp<Kc_tmp
             
             % cumulative infiltration at ponding and time to ponding
-            Fp=K_tmp*psi_delta_theta/(r_tmp-K_tmp);
-            tp=t(t_ind-1)+(Fp-F(K_ind,t_ind-1))/r_tmp;
+            Fp(K_ind,t_ind-1)=K_tmp*psi_delta_theta/(r_tmp-K_tmp);
+            tp(K_ind,t_ind-1)=t(t_ind-1)+...
+                (Fp(K_ind,t_ind-1)-F(K_ind,t_ind-1))/r_tmp;
                        
             % actual cumulative infiltration at the end of each
             % time-interval
-            F(K_ind,t_ind)=Fp+...
-                (2*K_tmp*psi_delta_theta)^0.5*(t_tmp^0.5-tp^0.5)+...
-                2/3*K_tmp*(t_tmp-tp)+...
-                1/18*(2*K_tmp^3/psi_delta_theta)^0.5*(t_tmp^1.5-tp^1.5);
+            F(K_ind,t_ind)=Fp(K_ind,t_ind-1)+...
+                (2*K_tmp*psi_delta_theta)^0.5*(t_tmp^0.5-tp(K_ind,t_ind-1)^0.5)+...
+                2/3*K_tmp*(t_tmp-tp(K_ind,t_ind-1))+...
+                1/18*(2*K_tmp^3/psi_delta_theta)^0.5*(t_tmp^1.5-tp(K_ind,t_ind-1)^1.5);
             
             if F(K_ind,t_ind)>F_tmp
                 F(K_ind,t_ind)=F_tmp;
-                indices_r(K_ind)=1;  % check 
+                indcices_r=[indices_r;K_ind];  % check 
             end
         else
             F(K_ind,t_ind)=F_tmp;
@@ -78,10 +107,12 @@ for t_ind=2:length(t)       % loop for each time-interval
     
     % compute the second term in Eq. (13) of Govindaraju et al. (2001) at
     % time-step t_ind, for each value of K
-    EI_np(:,t_ind-1)=K_samps.*(1+psi_delta_theta./F(:,t_ind));
+    T2(:,t_ind-1)=K_samps.*(1+psi_delta_theta./F(:,t_ind));
     ind=K_samps>Kc_tmp;
-    EI_np(ind,t_ind-1)=0;
-    EI_np(indices_r==1,t_ind-1)=r_tmp;        % check
+    T2(ind,t_ind-1)=0;
+    T2(indices_r,t_ind-1)=r_tmp;        % check
+    %}
+
 end
 
 I=r.*(1-mu_omega)+mean(EI_np);     % Infiltration rate during each time-interval
