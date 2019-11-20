@@ -46,15 +46,14 @@ for t_ind=2:length(t)       % loop for each time-interval
     r_tmp=r(t_ind-1);
     Kc_tmp=Kc(t_ind-1);
     indices_r=zeros(n_ks,1);
-    total_rainfall_depth=r_tmp*(t_tmp-t(t_ind-1));
+    rainfall_depth_tmp=r_tmp*(t_tmp-t(t_ind-1));
     
     % compute cumulative infiltration at the end of each time-step for
     % different values of Ks
     for K_ind=1:length(K_samps)     % loop for each value of K in K_samps
         
         K_tmp=K_samps(K_ind);
-        F_tmp=F(K_ind,t_ind-1)+total_rainfall_depth;
-        
+        F_tmp=F(K_ind,t_ind-1)+rainfall_depth_tmp;
         if K_tmp<Kc_tmp
             
             % cumulative infiltration at ponding and time to ponding
