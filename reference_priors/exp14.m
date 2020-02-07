@@ -10,7 +10,7 @@ clc
 
 n=2000;          % number of sets to be drawn
 k=2000;         % number of samples in each set
-na=1000;         % number of samples drawn for numerical approximation of the integral
+na=500;         % number of samples drawn for numerical approximation of the integral
 
 
 % extract observed data from etxtfiles
@@ -18,7 +18,7 @@ direc=['D:/Research/Thesis_work/Non_informative_priors/'...
     'matlab_codes/reference_priors/data/experiment_data'];
 
 theta_sat=0.36;                         % saturated moisture content
-fname='val_8.txt';
+fname='cal_4.txt';
 filename=fullfile(direc,fname);
 fid=fopen(filename,'r');
 data=textscan(fid,'%s%s%s','delimiter','\t');
@@ -31,7 +31,6 @@ psi=str2double(psi{2});                 % wetting front suction head in mm
 delta_theta=theta_sat-theta_ini;        % change in moisture content
 
 t=data1(5:end);                         % time-steps between rainfall rate is available
-t_interval=length(t)-1;
 rainfall=data{2}(5:end);
 runoff=data{3}(5:end);
 
@@ -44,6 +43,8 @@ r=r(2:end)./delta_t;                    % rainfall rate in mm h^{-1}
 obs=infil(2:end)./delta_t;              % observed infiltration rate in mm h^{-1}
 
 r=r'; obs=obs'; t=t';
+r(end)=[]; obs(end)=[]; t(end)=[]; infil(end)=[];
+t_interval=length(t)-1;
 
 n_ks=100;                              % number of samples of hydraulic conductivity to be drawn
 %                                        for numerical extimation of expectation
@@ -61,7 +62,7 @@ profile off; profile report
 mu_ks_min=0;        % min values of mu_ks
 mu_ks_max=2;           % max values of mu_ks
 sigma_ks_min=0.1;      % min values of sigma_ks
-sigma_ks_max=1;        % max values of sigma_ks
+sigma_ks_max=2;        % max values of sigma_ks
 sigma_err_min=0.1;     % min values of sigma_err
 sigma_err_max=5;       % max values of sigma_err
 % t=0:0.5:10;             % time at which cumulative infiltraion is available
@@ -69,7 +70,7 @@ sigma_err_max=5;       % max values of sigma_err
 
 % list of parameters at which prior is to be computed
 mu_ks_list=0.1:0.1:2;          % list of values of mu_ks
-sigma_ks_list=0.1:0.1:1;        % list of  values of sigma_ks
+sigma_ks_list=0.1:0.1:2;        % list of  values of sigma_ks
 sigma_err_list=0.1:0.1:5;        % list of values of sigma_err
 
 E_log_post=zeros(length(mu_ks_list),length(sigma_ks_list),length(sigma_err_list));
@@ -96,11 +97,16 @@ for mu_ks_ind=10%:length(mu_ks_list)                      % loop of mu_ks values
                 % first method
                 %
                 par_samps=[unifrnd(mu_ks_min,mu_ks_max,na,1),unifrnd(sigma_ks_min,sigma_ks_max,na,1)];
+                
+                % replace a random samples in 'par_samps' by the parameter (mu_ks_tmp,sigma_ks_tmp)
+                rand_ind=randsample(na,1);
+                par_samps(rand_ind,:)=[mu_ks_tmp,sigma_ks_tmp];
+                
                 l=zeros(size(par_samps,1),1);
                 parfor par_ind=1:size(par_samps,1)
                     
-                    infil_rate=series_formulation_areal_average_GA_1(par_samps(...
-                        par_ind,1),par_samps(par_ind,2),psi,delta_theta,n_ks,r,t);
+                    infil_rate=series_formulation_areal_average_GA_1(...
+                        par_samps(par_ind,1),par_samps(par_ind,2),psi,delta_theta,n_ks,r,t);
                     diff=bsxfun(@minus,samps,infil_rate);
                     diff_square=diff.*diff;
                     l(par_ind)=sum(diff_square(:));
@@ -142,3 +148,33 @@ for mu_ks_ind=10%:length(mu_ks_list)                      % loop of mu_ks values
         end
     end
 end
+
+%% normalize bernardo prior
+% subtract the mean to avoid NaNs and Infs
+E_log_post=exp(E_log_post-mean(E_log_post(:)));
+
+E_log_post(1,:)=0.5*E_log_post(1,:);
+E_log_post(end,:)=0.5*E_log_post(end,:);
+E_log_post(:,1)=0.5*E_log_post(:,1);
+E_log_post(:,end)=0.5*E_log_post(:,end);
+
+mu_ks_interval=mu_ks_list(2)-mu_ks_list(1);
+sigma_ks_interval=sigma_ks_list(2)-sigma_ks_list(1);
+
+normalizing_constant=mu_ks_interval*sigma_ks_interval*sum(E_log_post(:));
+PI_final=E_log_post/normalizing_constant;       % normalized bernardo prior
+
+% write bernardo prior to a text file
+sigma_err=2;                                    % Gaussian error variance
+fname='FSI_bernardo_prior_cal4_02_03_2020';
+save_filename=fullfile(['D:/Research/Thesis_work/Non_informative_'...
+    'priors/matlab_codes/reference_priors/results/field_scale_infiltration'],fname);
+fid=fopen(save_filename,'w');
+for mu_ks_ind=1:length(mu_ks_list)
+    for sigma_ks_ind=1:length(sigma_ks_list)
+        fprintf(fid,'%f,%f,%f,%f\n',mu_ks_list(mu_ks_ind),...
+            sigma_ks_list(sigma_ks_ind),sigma_err,...
+            PI_final(mu_ks_ind,sigma_ks_ind));
+    end
+end
+fclose(fid);

@@ -73,7 +73,7 @@ xlabel('hydraulic conductivity (K_h, cm h^{-1})',...
     'fontname','arial','fontsize',12);
 ylabel('prior density','fontname','arial','fontsize',12);
 
-sname='GA_prior_K_intital_prior_1_07_07_2019';
+sname='GA_prior_K_intital_prior_1_08_15_2019';
 save_filename=fullfile(save_dir,sname);
 print(save_filename,'-r300','-djpeg');
 clear box
@@ -88,7 +88,7 @@ xlabel('standard deviation (\sigma, cm) ',...
     'fontname','arial','fontsize',12);
 ylabel('prior density','fontname','arial','fontsize',12);
 
-sname='GA_prior_sigma_intital_prior_1_07_07_2019';
+sname='GA_prior_sigma_intital_prior_1_08_15_2019';
 save_filename=fullfile(save_dir,sname);
 print(save_filename,'-r300','-djpeg');
 clear box
@@ -97,14 +97,14 @@ clear box
 [X,Y]=meshgrid(sqrt(sig2),3600*kh');
 surf(X,Y,PI,'LineStyle','none','facealpha',0.8)
 colorbar;
-xlabel('standard deviation ( \sigma cm)',...
+xlabel('standard deviation ( \sigma, cm)',...
     'fontname','arial','fontsize',12);
 ylabel(' K_h (cm h^{-1})',...
     'fontname','arial','fontsize',12);
 zlabel('prior density','fontname','arial','fontsize',12);
 set(gca,'fontname','arial','fontsize',12)
 
-sname='GA_prior_joint_intital_prior_1_07_07_2019';
+sname='GA_prior_joint_intital_prior_1_08_15_2019';
 save_filename=fullfile(save_dir,sname);
 print(save_filename,'-r300','-djpeg');
 %}
@@ -120,7 +120,7 @@ for i=1:length(kh)
         save_data(count,:)=[kh(i),sqrt(sig2(ii)),PI(i,ii)];
     end
 end
-fname='prior_density_data_initial_prior_1_07_07_2019';
+fname='prior_density_data_initial_prior_1_08_15_2019';
 save_filename=fullfile(save_dir,fname);
 dlmwrite(save_filename,save_data,',')
 

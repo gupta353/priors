@@ -51,7 +51,7 @@ clear box
 %}
 
 %% induced prior over output realizations of generalized Gaussian distribution
-%
+%{
 mu=0;phi=1;
 n_beta_uniform=10000;
 n_beta_bernardo=10000;

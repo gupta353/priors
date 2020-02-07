@@ -18,7 +18,7 @@ N=length(y0);
 % other known parameters of Green-Ampt equation
 psi=50;                % (in cm)
 delta_theta=0.004787;  % change in moisture content
-t=1148;                % time at which infiltration is computed (in s)
+t=GLOBAL_DATA.t;                % time at which infiltration is computed (in s)
 H0=13.7;
 
 kh=theta(1);        % hydraulic conductivity in cm s^-1

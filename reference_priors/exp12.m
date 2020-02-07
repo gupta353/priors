@@ -40,7 +40,7 @@ H0=13.7;            % Intital water surface level from ground (cm)
 g=@(x)falling_head_Green_Ampt_solution(x,psi,...        % a fucntion handle for Green-Ampt model
     delta_theta,H0,t);
 
-kh=(0.1:0.1:50)/3600;      % hydraulic conductivity values (in cm s^-1) at which the prior is to be evaluated
+kh=(0.1:0.1:1)/3600;      % hydraulic conductivity values (in cm s^-1) at which the prior is to be evaluated
 sig2=0.1;           % variance values (cumulatve infiltration) at which prior is to be evaluated
 max_kh=51/3600;
 min_kh=0.01/3600;
@@ -73,6 +73,7 @@ for i=1:length(kh)
             T1=sum(tmp_matrix(:));
             T1=-1/2/sig2_tmp*T1;
             
+            % computation of integral in Bayes theorem 
             q=nan(1,unif_integration_samples);
             for fun_i=1:unif_integration_samples
                 tmp_matrix=bsxfun(@minus,samps,infil(fun_i,:));
@@ -116,6 +117,7 @@ PI=PI/A;
 plot(kh*3600,PI(:,1));
 
 % write the data
+%{
 wfname='FHGA_prior_kh_sig2=0.1_09_02_2019';
 write_filename=fullfile(save_dir,'results/onwards_august_2019',wfname);
 fid=fopen(write_filename,'w');
@@ -125,4 +127,4 @@ for i=1:length(kh)
     end
 end
 fclose(fid);
-
+%}
