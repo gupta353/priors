@@ -9,7 +9,7 @@ save_dir=['D:/Research/Thesis_work/Non_informative_priors/'...
     'matlab_codes/reference_priors/'];
 
 %% induced prior over cumulative infiltration in Green-Ampt model
-%{
+%
 %% draw samples of hydraulic conductivity from the prior
 % samples from Bernardo prior
 filename=['D:/Research/Thesis_work/Non_informative_priors/matlab_codes/'...
@@ -39,14 +39,16 @@ end
 hist(F)
 box('on');
 box.linewidth=2;
-set(gca,'fontname','arial','fontsize',12,box)
+set(gca,'fontname','arial','fontsize',12,...
+    'xlim',[0.4 4],box)
 xlabel('F(t=1 hour) (cm)',...
     'fontname','arial','fontsize',12);
-ylabel('count','fontname','arial','fontsize',12);
+ylabel('Number of samples in the bin','fontname','arial','fontsize',12);
 
-sname='induced_prior_cum_infiltration_10_30_2019';
-save_filename=fullfile(save_dir,sname);
-print(save_filename,'-r300','-djpeg');
+sname='induced_prior_cum_infiltration_10_30_2019.svg';
+save_filename=fullfile(save_dir,'Manuscript_plots',sname);
+% print(save_filename,'-r300','-djpeg');
+plot2svg(save_filename);
 clear box
 %}
 
