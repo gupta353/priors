@@ -7,6 +7,8 @@
 % references: Berger et al. (2009), The formal definition of reference
 % priors
 % Chow et al. (1988), Applied Hydrology
+% this scripts implements an approximate method different from that in
+% Berger et al. (2009)
 
 clear all
 close all
