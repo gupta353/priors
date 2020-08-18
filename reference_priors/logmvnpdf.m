@@ -11,6 +11,10 @@ function logpdf = logmvnpdf(x,mean_vec,cov_mat)
     logdet = 2*sum(log(diag(L)));
     
     % log of pdf
-    logpdf = -1/2*log(2*pi) - 1/2*logdet - 1/2*(x-mean_vec)*cov_mat^(-1)*(x-mean_vec)';
-
+    err = x-mean_vec;
+    if err*err'<10^-5
+        logpdf = -1/2*log(2*pi) - 1/2*logdet;
+    else
+        logpdf = -1/2*log(2*pi) - 1/2*logdet - 1/2*err*cov_mat^(-1)*err';
+    end
 end
