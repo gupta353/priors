@@ -8,19 +8,9 @@ clc
 
 % read data
 direc = 'D:/Research/Thesis_work/Non_informative_priors/matlab_codes/reference_priors';
-fname = 'GP_optim_data.mat';
+fname = 'GP_train_test_data.mat';
 filename = fullfile(direc,'results/pdm_giuh',fname);
 load(filename);
-
-% remove training and test samples with values log_ks values less than
-% -5.3
-ind = find(log(Xtrain(:,3))/log(10)<-6);
-Xtrain = Xtrain(ind,:);
-ytrain = ytrain(ind,:);
-
-ind = find(log(Xtest(:,3))/log(10)<-6);
-Xtest = Xtest(ind,:);
-ytest = ytest(ind,:);
 
 % observation variance
 sig2 = 0.0001;          % a small observation variance is added to keep the covariance matrix positive definite
@@ -40,13 +30,13 @@ dt = size(ytrain,2);
 % ytest = streamflow_samps(test_ind,:);
 
 % normalize the predictor space
-stand_dev = std(X);
-m = mean(X);
-Xtrain = bsxfun(@minus,X,m);
-Xtrain = bsxfun(@rdivide,Xtrain,stand_dev);
-
-Xtest = bsxfun(@minus,Xtest,m);
-Xtest = bsxfun(@rdivide,Xtest,stand_dev);
+% stand_dev = std(X);
+% m = mean(X);
+% Xtrain = bsxfun(@minus,X,m);
+% Xtrain = bsxfun(@rdivide,Xtrain,stand_dev);
+%
+% Xtest = bsxfun(@minus,Xtest,m);
+% Xtest = bsxfun(@rdivide,Xtest,stand_dev);
 
 %% GPR at optimal parameters
 %{
@@ -81,7 +71,7 @@ profile off;
 %}
 
 % parameter optimization
-%
+%{
 loss=@(theta)GPRobj(theta,Xtrain,ytrain,Xtest,ytest,sig2);      % loss function
 % simulated annealing
 parent = [1,1,1,1,1,10,2,10];
@@ -94,7 +84,41 @@ tic;
 toc;
 % save('optimal_GP_param_11000_2','theta_opt','fval');
 %}
+%% parameter optimization by dividing the data into two parts (part 1 contains log_ks>-6 and part two contains log_ks<=-6)
+% part-1
 
+inds{1} = find(log(Xtrain(:,3))/log(10)>-6);
+inds{2} = find(log(Xtrain(:,3))/log(10)<=-6);
+
+for ii = 1:2
+    
+    ind = inds{ii};
+    Xtrain1 = Xtrain(ind,:);
+    ytrain1 = ytrain(ind,:);
+    
+    ind = find(log(Xtest(:,3))/log(10)>-6);
+    Xtest1 = Xtest(ind,:);
+    ytest1 = ytest(ind,:);
+    
+    % normalize the predictor space
+    stand_dev(ii,:) = std(Xtrain1);
+    m(ii,:) = mean(Xtrain1);
+    Xtrain1 = bsxfun(@minus,Xtrain1,m(ii,:));
+    Xtrain1 = bsxfun(@rdivide,Xtrain1,stand_dev(ii,:));
+    
+    Xtest1 = bsxfun(@minus,Xtest1,m(ii,:));
+    Xtest1 = bsxfun(@rdivide,Xtest1,stand_dev(ii,:));
+    
+    parent = [1,1,1,1,1,10,2,10];
+    % parent = [4.47607032455577,57.4743548804763,0.000100000000000110,2.79062368567944,28.0900342186303,55.1299559566544];
+    lb=[0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001];                 % lower bound
+    ub=[1000,1000,1000,1000,1000,1000,1000,1000];                                  % upper bound
+    options = optimset('TolFun',10^-8,'MaxFunEvals',10);
+    tic;
+    loss=@(theta)GPRobj(theta,Xtrain1,ytrain1,Xtest1,ytest1,sig2);      % loss function
+    [theta_opt(ii,:),fval(ii)] = simulannealbnd(loss,parent,lb,ub,options);
+    toc;
+end
 %% debug positive definiteness error
 %{
 lb=[0.0001,0.0001,0.0001,0.0001,0.0001,0.0001];           % lower bound
