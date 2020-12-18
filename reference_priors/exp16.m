@@ -346,6 +346,7 @@ filename = fullfile(direc,'results/pdm_giuh',sname);
 save(filename,'XTEST','YTEST');
 %}
 %% create a new dataset based on preliminary optimization
+%{
 % read additional parameter data
 fname = 'GP_optim_data_additional.mat';
 filename = fullfile(direc,'results/pdm_giuh',fname);
@@ -375,7 +376,30 @@ ytrain = [ytrain;streamflow_samps];
 sname = 'GP_optim_data_additional.mat';
 filename = fullfile(direc,'results/pdm_giuh',sname);
 save(filename,'Xtrain','ytrain');
+%}
 
+%% create training data for GPR uisng sobolev sequences
+n_sobol_samps = 11000;     % number of latin hypercube samples on each dimension
+n_var = 5;              % number of dimensions (each dimension corresponds to one parameter)
+rng(1);
+
+par_range = [1, 2000;...                      % storage capacity (in mm)
+    0.01, 10;...                              % storage distribution parameter
+    -15, -2;...                               % logarithm of baseflow reservior constant (in s^-1)
+    0.01, 10;...                              % in-stream-velocity (in m s^-1)
+    0.01, 10];                                % hill slope velocity (in m s^-1)
+
+param_samps = SobolsampAG(n_sobol_samps,n_var,par_range);
+param_samps(:,3) = 10.^param_samps(:,3); % convert baseflow parameter to arithmetic space
+
+tic;
+streamflow_samps = zeros(n_sobol_samps,93);
+parfor sind = 1:size(param_samps,1);
+    streamflow_samps(sind,:) = int_pdm_giuh(param_samps(sind,:),GLOBAL_DATA,GEOMORPH);
+end
+toc;
+
+%}
 %% computation of Bernardo prior
 %{
 n = 10000;       % number of samples to be drawn from the distribution
