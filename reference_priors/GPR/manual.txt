@@ -1,0 +1,121 @@
+Data format
+At mat-file containing four variables:
+(1)Xtrain=(n1xd) data matrix with n1 examples and d features to be used for training
+(2)ytrain=n1-vector of noisy targets to be used for training
+(3)Xtest- (n2xd) data matrix with n2 examples and d features to be used for testing
+(4)ytest=n2-vector of noisy targets to be used for testing
+******************************************************************************
+
+Quick steps to run the GPR
+
+(1)Open the script gprImp
+(2)Specify the path to the folder containing data
+(3)Specify the index of training and test samples to be used 
+(suggestion for computational efficiency: 
+50 samples from training data and 50 samples test data)
+(4)Specify the range of the parameters for cross-validation 
+(suggestion for computational efficiency:
+ l=1:10:100
+sig2=1:5:50
+sigf2=1:5:50)
+******************************************************************************
+
+List of functions and scripts
+
+[ftest,V]=GPR(Xtrain,ytrain,Ktrain,Ktrt,Ktest) 
+Implementation of Gaussian Process Regression
+Inputs:
+Xtrain=(nxd) data matrix with n examples and d features to be used for training
+ytrain=n-vector of noisy targets to be used for training
+Ktrain=covariance matrix (of response) of the data-matrix Xtrain
+Ktest=covariance matrix (of response) of test matrix Xtest
+Ktrt=matrix of covariance (of response) between test points and training-points
+note: size of ktrt should be (# of training samples x # of test samples)
+sig2=variance of random noise
+Outputs:
+ftest=mean of the predictive distribution
+V=variance of the predictive distribution
+Reference:
+ Williams and Rasmussen, (2006). Gaussian Process for Regression
+****************************************************************
+
+K=KerComp(X1,X2,M,l,sigf2)
+computation of covariance matrix (of response) between points given in
+two matrices
+Covariance function = squared-exponential kernel
+Inputs:
+X1= a (n1xd) matrix containing a data-point in each row
+X2= a (n2xd) matrix containing a data-point in each row
+M = an (dxd) inverse covariance matrix with (i,j) entry equal to the covariance between ith and jth feature 
+l=length-scale(scalar) 
+sigf2=signal variance(scalar)
+note: random-noise is not added in the implementation
+************************************************************************************************************************
+
+K=KernelExp(x1,x2,M,l,sigf2)
+covariance (of response) matrix computation for squared-exponential
+covariance function
+Inputs:
+x1 and x2= two column vectors (of same length)
+M = an (dxd) inverse covariance matrix with (i,j) entry equal to the covariance between ith and jth feature 
+l=length-scale(scalar) 
+sigf2=signal-variance (scalar)
+Output
+K=covariance between response at given inputs
+Note: Random-noise variance has not been added to covariance
+References
+Williams and Rasmussen, (2006). Gaussian Process for Regression
+****************************************************************
+
+[L]=kcrossval(X,y,M,l,sig2,sigf2)
+Leave-one-out cross-validation routine for GPR
+Inputs:
+X=(nxd) data matrix with n examples and d features to be used for
+training
+y=an n column vector of noisy targets
+M=an inverse covariance matrix of features (to be used for covariance between samples)
+l=length-scale (scalar)
+sig2=variance of random noise (scalar)
+sigf2=signal-variance (scalar)
+Outputs:
+z=a k-vector of negative-log-likelihood of for different folds
+Note: Woodbury-Sherman-Morrison formula was used for compuatational
+efficiency (Williams and Rasmussen, Chapter:5)
+****************************************************************
+
+f=kroneckerDelta(m,n)
+Kronecker delta function
+inputs:
+m=a scalar
+n=a scalar
+outputs:
+1 or 0
+****************************************************************
+
+gprImp
+implementation of GPR
+this function calls all the necessary functions to implement GPR
+****************************************************************
+
+Rmsevssize_plots
+script for plotting rmse vs number of training samples
+****************************************************************
+
+Contour_plots
+routine for contour plot of cross-validation results
+inputs: 
+L=the column vector of log-likelihood for different parameter-sets
+order of parameter variation=sigf2-sig2-l;
+par=the matrix containing a parameter-set in each row
+parameter=l(length-scale)/sig2(noise-variance)/sigf2(signal-variance)
+output: a contour plot for a given value of par
+****************************************************************
+
+Details of the gprImp script
+
+gprImp is the main script that calls all the necessary functions for implementation of GPR. Figure 1 shows the snippet of the first section of the script. Section 1 loads the training and test data which is stored in fullData.mat file. The user has to specify the correct path to the folder where data file exists. The training and test data is selected to test the algorithm. In Fig. 1, I have used full data. However, it takes a long time to run the algorithm with large number of samples because, the time-complexity of GPR scale-up as third power of number of samples. Therefore, it is suggested to test the code with very few training and test samples; for example, take 50 training and 50 test samples.
+
+Figure 2 shows the snippet of the second section of the MATLAB gprImp script. The user should select an appropriate range for the parameters to be optimized. Further, this section calls kcrossval in a for-loop to perform the leave-one-out cross-validation. Three for-loops have been used for three parameters; the first for-loop is run in parallel to decrease the computational time. 
+Figure 3 shows the third section of the gprImp script. It selects the parameters with maximum log-likelihood. 
+Figure 4 shows the fourth section of the script gprImp which runs the GPR for optimal parameters selected after cross-validation. This section calls KerComp function to compute the covariance-matrix of response in training data (Ktrain), in test data (Ktest) and between training-test data (Ktrt). Further, it calls GPR to compute mean and variance of the predictive distribution and computes the root-mean-squared error of the fitting.
+Figure 5 shows the fifth section of the gprImp script. It plots the mean of the predictive distribution against the observed target values in test data and a scatter plot of variance at each of response value in the test data.
