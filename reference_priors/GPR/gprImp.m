@@ -11,6 +11,18 @@ direc = 'D:/Research/Thesis_work/Non_informative_priors/matlab_codes/reference_p
 fname = 'GP_train_test_data.mat';
 filename = fullfile(direc,'results/pdm_giuh',fname);
 load(filename);
+log_ks_thresh = -5.3;
+
+% read train data in a particular range
+%{
+ind = find(log(Xtrain(:,3))/log(10)<=-5.3);
+Xtrain = Xtrain(ind,:);
+ytrain = ytrain(ind,:);
+
+ind = find(log(Xtest(:,3))/log(10)<=-5.3);
+Xtest = Xtest(ind,:);
+ytest = ytest(ind,:);
+%}
 
 % observation variance
 sig2 = 0.0001;          % a small observation variance is added to keep the covariance matrix positive definite
@@ -29,14 +41,17 @@ dt = size(ytrain,2);
 % Xtest = param_samps(test_ind,:);
 % ytest = streamflow_samps(test_ind,:);
 
+
 % normalize the predictor space
-% stand_dev = std(X);
-% m = mean(X);
-% Xtrain = bsxfun(@minus,X,m);
-% Xtrain = bsxfun(@rdivide,Xtrain,stand_dev);
-%
-% Xtest = bsxfun(@minus,Xtest,m);
-% Xtest = bsxfun(@rdivide,Xtest,stand_dev);
+%{
+stand_dev = std(X);
+m = mean(X);
+Xtrain = bsxfun(@minus,X,m);
+Xtrain = bsxfun(@rdivide,Xtrain,stand_dev);
+
+Xtest = bsxfun(@minus,Xtest,m);
+Xtest = bsxfun(@rdivide,Xtest,stand_dev);
+%}
 
 %% GPR at optimal parameters
 %{
@@ -84,19 +99,21 @@ tic;
 toc;
 % save('optimal_GP_param_11000_2','theta_opt','fval');
 %}
-%% parameter optimization by dividing the data into two parts (part 1 contains log_ks>-6 and part two contains log_ks<=-6)
-% part-1
+%% parameter optimization by dividing the data into two parts (part 1 contains log_ks>-5.3 and part two contains log_ks<=-5.3)
+%
+inds_train{1} = find(log(Xtrain(:,3))/log(10)>log_ks_thresh);
+inds_train{2} = find(log(Xtrain(:,3))/log(10)<=log_ks_thresh);
 
-inds{1} = find(log(Xtrain(:,3))/log(10)>-6);
-inds{2} = find(log(Xtrain(:,3))/log(10)<=-6);
+inds_test{1} = find(log(Xtest(:,3))/log(10)>log_ks_thresh);
+inds_test{2} = find(log(Xtest(:,3))/log(10)<=log_ks_thresh);
 
 for ii = 1:2
     
-    ind = inds{ii};
+    ind = inds_train{ii};
     Xtrain1 = Xtrain(ind,:);
     ytrain1 = ytrain(ind,:);
     
-    ind = find(log(Xtest(:,3))/log(10)>-6);
+    ind = inds_test{ii};
     Xtest1 = Xtest(ind,:);
     ytest1 = ytest(ind,:);
     
@@ -110,7 +127,6 @@ for ii = 1:2
     Xtest1 = bsxfun(@rdivide,Xtest1,stand_dev(ii,:));
     
     parent = [1,1,1,1,1,10,2,10];
-    % parent = [4.47607032455577,57.4743548804763,0.000100000000000110,2.79062368567944,28.0900342186303,55.1299559566544];
     lb=[0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001];                 % lower bound
     ub=[1000,1000,1000,1000,1000,1000,1000,1000];                                  % upper bound
     options = optimset('TolFun',10^-8,'MaxFunEvals',10);
@@ -119,6 +135,7 @@ for ii = 1:2
     [theta_opt(ii,:),fval(ii)] = simulannealbnd(loss,parent,lb,ub,options);
     toc;
 end
+%}
 %% debug positive definiteness error
 %{
 lb=[0.0001,0.0001,0.0001,0.0001,0.0001,0.0001];           % lower bound
@@ -149,7 +166,7 @@ count = count+1;
 end
 %}
 
-% test the effectiveness of GPR on test samples
+%% test the effectiveness of GPR on test samples
 % read data
 %{
 fname = 'pdm_giuh_runs_1000_test.mat';
@@ -158,7 +175,7 @@ load(filename);
 
 % remove training and test samples with values log_ks values less than
 % -5.3
-ind = find(log(XTEST(:,3))/log(10)>-5.3);
+ind = find(log(XTEST(:,3))/log(10)<=log_ks_thresh);
 XTEST = XTEST(ind,:);
 YTEST = YTEST(:,ind);
 
@@ -169,7 +186,8 @@ XTEST = bsxfun(@rdivide,XTEST,stand_dev);
 % parameters
 %theta = [34.2597102882363,21.5131335625532,0.000100000000002855,16.9366278337041,15.8116876803111,69.6723723138751,0.684457347826273,76.7386368080396];
 %theta = [61.0752102913007,57.8158266606964,0.0109558571044910,42.3504230297851,117.567889567609,59.7881438784855,80.1902988798573,67.4976467147845];
-theta = [35.6344532939392,23.2478620583043,0.0145223340005544,28.8085373555612,27.5225839263258,4.26879082052562,7.13740873772817,11.5963839457466];
+%theta = [35.6344532939392,23.2478620583043,0.0145223340005544,28.8085373555612,27.5225839263258,4.26879082052562,7.13740873772817,11.5963839457466];
+theta = [17.7106665545364,17.3503282274706,6.55246711538093,4.33303949894578,16.3042540818613,11.7153012721162,1.16808482624177,20.1305106100244];
 sigf2 = theta(6);
 l = 1./theta(1:5);
 M = diag(l);
@@ -195,11 +213,11 @@ for ind = 1:size(XTEST,1)
     SS = sum((YTEST(:,ind)-ftest(:,ind)).^2);
     Var = sum((YTEST(:,ind)-mean(YTEST(:,ind))).^2);
     NSE(ind) = 1-SS/Var;
-%     scatter(YTEST(:,ind),ftest(:,ind),'filled'); hold on
-%     xlim([0 500]); ylim([0 500]); hold on
-%     plot([0 500], [0 500],'color','black');
-%     title(['NSE = ',num2str(NSE(ind))],'fontname','arial','fontsize',12);
-%     pause(1); hold off
+    %     scatter(YTEST(:,ind),ftest(:,ind),'filled'); hold on
+    %     xlim([0 500]); ylim([0 500]); hold on
+    %     plot([0 500], [0 500],'color','black');
+    %     title(['NSE = ',num2str(NSE(ind))],'fontname','arial','fontsize',12);
+    %     pause(1); hold off
 end
 
 %}
