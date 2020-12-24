@@ -8,7 +8,7 @@ clc
 
 % read data
 direc = 'D:/Research/Thesis_work/Non_informative_priors/matlab_codes/reference_priors';
-fname = 'GP_train_test_data_2.mat';
+fname = 'GP_train_test_data_3.mat';
 filename = fullfile(direc,'results/pdm_giuh',fname);
 load(filename);
 log_ks_thresh = -5;
@@ -19,11 +19,11 @@ Xtest(:,3) = log(Xtest(:,3))/log(10);
 
 % read train data in a particular range
 %
-ind = find(Xtrain(:,3)<=log_ks_thresh & Xtrain(:,2)>1 & Xtrain(:,4)<=1 & Xtrain(:,4)>0.2);
+ind = find(Xtrain(:,3)<=log_ks_thresh & Xtrain(:,2)>1 & Xtrain(:,4)<=0.2 & Xtrain(:,4)>0.04);
 Xtrain = Xtrain(ind,:);
 ytrain = ytrain(ind,:);
 
-ind = find(Xtest(:,3)<=log_ks_thresh & Xtest(:,2)>1 & Xtest(:,4)<=1 & Xtest(:,4)>0.2);
+ind = find(Xtest(:,3)<=log_ks_thresh & Xtest(:,2)>1 & Xtest(:,4)<=0.2 & Xtest(:,4)>0.04);
 Xtest = Xtest(ind,:);
 ytest = ytest(ind,:);
 %}
@@ -181,7 +181,7 @@ XTEST(:,3) = log(XTEST(:,3))/log(10);
 
 % remove training and test samples with values log_ks values less than
 % -5.3
-ind = find(XTEST(:,3)<=log_ks_thresh & XTEST(:,2)>1 & XTEST(:,4)<=1 & XTEST(:,4)>0.2);
+ind = find(XTEST(:,3)<=log_ks_thresh & XTEST(:,2)>1 & XTEST(:,4)<=0.2 & XTEST(:,4)>0.04);
 XTEST = XTEST(ind,:);
 YTEST = YTEST(:,ind);
 
@@ -197,7 +197,7 @@ XTEST = bsxfun(@rdivide,XTEST,stand_dev);
 % theta = [13.8025754396909,32.0412381262034,0.0518917313544890,111.473502287412,64.5163089950549,0.195541262197264,5.84800582661357,19.3899665304380];
 % theta = [27.2507285415686,34.0563516344196,0.00248191699746690,63.0440918792000,18.1918058647241,4.65033447686895,12.7423936084495,1.22967171502646];
 % theta = [3.83725590398492,58.2038832567709,0.845848297377934,2.25091552624403,38.0059216943300,18.9781881066915,10.5694430397704,1.59803044458439];
- theta = [7.85723406128318,9.24120696326811,0.201635404793066,15.0930305884099,13.4608178368492,17.1121900707090,1.92582312461280,32.0688733784484];
+ theta = [34.9549131278036,44.8256127050938,0.158390886542874,10.3157511741355,21.5159857663978,27.5322012606553,17.1613723541995,42.7351223786208];
 sigf2 = theta(6);
 l = 1./theta(1:5);
 M = diag(l);
