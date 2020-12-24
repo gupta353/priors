@@ -2,7 +2,7 @@
 % inputs: n = number of samples to be drawn
 %         d = number of dimensions
 %         par_range  = parameter range
-%         ni = interval from which samples are drawn (e.g., first n or second n or third n etc.)
+%         ni = interval from which samples are drawn
 % outputs: param_samps = parameter sets drawn using sobolev sequences
 
 
@@ -11,7 +11,7 @@ function param_samps = SobolsampAG(n,d,par_range,ni)
     
     % number of dimensions (each dimension corresponds to one parameter)
     sobol_samps = 	sobolset(d,'Skip',1000);
-    sobol_samps =   sobol_samps(n*(ni-1)+1:ni*n,:);
+    sobol_samps =   sobol_samps(ni,:);
     
     param_samps = zeros(n,d);
     for pind = 1:size(sobol_samps,2)
