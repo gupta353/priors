@@ -379,8 +379,8 @@ save(filename,'Xtrain','ytrain');
 %}
 
 %% create training data for GPR uisng sobolev sequences
-n_sobol_samps = 5000;     % number of latin hypercube samples on each dimension
-sample_interval = 180000+1:180000+n_sobol_samps;
+n_sobol_samps = 10000;     % number of latin hypercube samples on each dimension
+sample_interval = 200000+1:200000+n_sobol_samps;
 n_var = 5;              % number of dimensions (each dimension corresponds to one parameter)
 rng(1);
 
