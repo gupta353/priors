@@ -8,7 +8,7 @@ clc
 
 % read data
 direc = 'D:/Research/Thesis_work/Non_informative_priors/matlab_codes/reference_priors';
-fname = 'GP_train_test_data_10.mat';
+fname = 'GP_train_test_data_11.mat';
 filename = fullfile(direc,'results/pdm_giuh',fname);
 load(filename);
 log_ks_thresh = -5;
@@ -19,11 +19,11 @@ Xtest(:,3) = log(Xtest(:,3))/log(10);
 
 % read train data in a particular range
 %
-ind = find(Xtrain(:,3)<=log_ks_thresh & Xtrain(:,2)<=0.2 & Xtrain(:,2)>0.12 & Xtrain(:,4)<=2 & Xtrain(:,4)>0.2);
+ind = find(Xtrain(:,3)<=log_ks_thresh & Xtrain(:,2)<=0.2 & Xtrain(:,2)>0.12 & Xtrain(:,4)<=0.2);
 Xtrain = Xtrain(ind,:);
 ytrain = ytrain(ind,:);
 
-ind = find(Xtest(:,3)<=log_ks_thresh & Xtest(:,2)<=0.2 & Xtest(:,2)>0.12 & Xtest(:,4)<=2 & Xtest(:,4)>0.2);
+ind = find(Xtest(:,3)<=log_ks_thresh & Xtest(:,2)<=0.2 & Xtest(:,2)>0.12 & Xtest(:,4)<=0.2);
 Xtest = Xtest(ind,:);
 ytest = ytest(ind,:);
 %}
@@ -91,7 +91,7 @@ profile off;
 %}
 
 % parameter optimization
-%{
+%
 loss=@(theta)GPRobj(theta,Xtrain,ytrain,Xtest,ytest,sig2);      % loss function
 % simulated annealing
 parent = [1,1,1,1,1,10,2,10];
@@ -181,7 +181,7 @@ XTEST(:,3) = log(XTEST(:,3))/log(10);
 
 % remove training and test samples with values log_ks values less than
 % -5.3
-ind = find(XTEST(:,3)<=log_ks_thresh & XTEST(:,2)<=0.2 & XTEST(:,2)>0.12 & XTEST(:,4)<=2 & XTEST(:,4)>0.2);
+ind = find(XTEST(:,3)<=log_ks_thresh & XTEST(:,2)<=0.2 & XTEST(:,2)>0.12 & XTEST(:,4)<=0.2);
 XTEST = XTEST(ind,:);
 YTEST = YTEST(:,ind);
 
@@ -197,7 +197,7 @@ XTEST = bsxfun(@rdivide,XTEST,stand_dev);
 % theta = [13.8025754396909,32.0412381262034,0.0518917313544890,111.473502287412,64.5163089950549,0.195541262197264,5.84800582661357,19.3899665304380];
 % theta = [27.2507285415686,34.0563516344196,0.00248191699746690,63.0440918792000,18.1918058647241,4.65033447686895,12.7423936084495,1.22967171502646];
 % theta = [3.83725590398492,58.2038832567709,0.845848297377934,2.25091552624403,38.0059216943300,18.9781881066915,10.5694430397704,1.59803044458439];
- theta = [0.0971216406221484,7.28803454817970,0.213134075509545,7.42869658019493,46.4471789617114,20.0196885708637,33.6407634867982,0.236696764926502];
+ theta = [1.77499519928580,2.22255157697576,0.271711741172901,9.02829832424764,11.7146502370842,4.63778224991245,14.8386451683180,10.8235505040778];
 sigf2 = theta(6);
 l = 1./theta(1:5);
 M = diag(l);
