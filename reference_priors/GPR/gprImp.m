@@ -8,7 +8,7 @@ clc
 
 % read data
 direc = 'D:/Research/Thesis_work/Non_informative_priors/matlab_codes/reference_priors';
-fname = 'GP_train_test_data_4.mat';
+fname = 'GP_train_test_data_6.mat';
 filename = fullfile(direc,'results/pdm_giuh',fname);
 load(filename);
 log_ks_thresh = -5;
@@ -19,11 +19,11 @@ Xtest(:,3) = log(Xtest(:,3))/log(10);
 
 % read train data in a particular range
 %
-ind = find(Xtrain(:,3)<=log_ks_thresh & Xtrain(:,2)>1 & Xtrain(:,4)<=0.04);
+ind = find(Xtrain(:,3)<=log_ks_thresh & Xtrain(:,2)<=1 & Xtrain(:,2)>0.2 & Xtrain(:,4)>2);
 Xtrain = Xtrain(ind,:);
 ytrain = ytrain(ind,:);
 
-ind = find(Xtest(:,3)<=log_ks_thresh & Xtest(:,2)>1 & Xtest(:,4)<=0.04);
+ind = find(Xtest(:,3)<=log_ks_thresh & Xtest(:,2)<=1 & Xtest(:,2)>0.2 & Xtest(:,4)>2);
 Xtest = Xtest(ind,:);
 ytest = ytest(ind,:);
 %}
@@ -181,7 +181,7 @@ XTEST(:,3) = log(XTEST(:,3))/log(10);
 
 % remove training and test samples with values log_ks values less than
 % -5.3
-ind = find(XTEST(:,3)<=log_ks_thresh & XTEST(:,2)>1 & XTEST(:,4)<=0.04);
+ind = find(XTEST(:,3)<=log_ks_thresh & XTEST(:,2)<=1 & XTEST(:,2)>0.2 & XTEST(:,4)>2);
 XTEST = XTEST(ind,:);
 YTEST = YTEST(:,ind);
 
@@ -197,7 +197,7 @@ XTEST = bsxfun(@rdivide,XTEST,stand_dev);
 % theta = [13.8025754396909,32.0412381262034,0.0518917313544890,111.473502287412,64.5163089950549,0.195541262197264,5.84800582661357,19.3899665304380];
 % theta = [27.2507285415686,34.0563516344196,0.00248191699746690,63.0440918792000,18.1918058647241,4.65033447686895,12.7423936084495,1.22967171502646];
 % theta = [3.83725590398492,58.2038832567709,0.845848297377934,2.25091552624403,38.0059216943300,18.9781881066915,10.5694430397704,1.59803044458439];
- theta = [78.0346328821957,23.9690566643000,0.234344404273753,78.4651941587052,38.2293005897696,0.183281643948499,2.33889787654432,4.24223436826739];
+ theta = [0.410247841572588,39.3856803662698,0.360698035934887,68.2210082444571,31.1874871785994,0.0368278252015714,9.75587017635036,6.28957567678548];
 sigf2 = theta(6);
 l = 1./theta(1:5);
 M = diag(l);
