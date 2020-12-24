@@ -8,7 +8,7 @@ clc
 
 % read data
 direc = 'D:/Research/Thesis_work/Non_informative_priors/matlab_codes/reference_priors';
-fname = 'GP_train_test_data.mat';
+fname = 'GP_train_test_data_1.mat';
 filename = fullfile(direc,'results/pdm_giuh',fname);
 load(filename);
 log_ks_thresh = -5;
@@ -19,11 +19,11 @@ Xtest(:,3) = log(Xtest(:,3))/log(10);
 
 % read train data in a particular range
 %
-ind = find(Xtrain(:,3)>log_ks_thresh & Xtrain(:,1)>50);
+ind = find(Xtrain(:,3)>log_ks_thresh & Xtrain(:,1)<=50);
 Xtrain = Xtrain(ind,:);
 ytrain = ytrain(ind,:);
 
-ind = find(Xtest(:,3)>log_ks_thresh & Xtest(:,1)>500);
+ind = find(Xtest(:,3)>log_ks_thresh & Xtest(:,1)<=50);
 Xtest = Xtest(ind,:);
 ytest = ytest(ind,:);
 %}
@@ -91,14 +91,14 @@ profile off;
 %}
 
 % parameter optimization
-%{
+%{  
 loss=@(theta)GPRobj(theta,Xtrain,ytrain,Xtest,ytest,sig2);      % loss function
 % simulated annealing
 parent = [1,1,1,1,1,10,2,10];
 % parent = [4.47607032455577,57.4743548804763,0.000100000000000110,2.79062368567944,28.0900342186303,55.1299559566544];
 lb=[0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001];                 % lower bound
 ub=[1000,1000,1000,1000,1000,1000,1000,1000];                                  % upper bound
-options = optimset('TolFun',10^-8,'MaxFunEvals',500000);
+options = optimset('TolFun',10^-8,'MaxFunEvals',1000);
 tic;
 [theta_opt,fval] = simulannealbnd(loss,parent,lb,ub,options);
 toc;
@@ -181,7 +181,7 @@ XTEST(:,3) = log(XTEST(:,3))/log(10);
 
 % remove training and test samples with values log_ks values less than
 % -5.3
-ind = find(XTEST(:,3)>log_ks_thresh & XTEST(:,1)>50);
+ind = find(XTEST(:,3)>log_ks_thresh & XTEST(:,1)<=50);
 XTEST = XTEST(ind,:);
 YTEST = YTEST(:,ind);
 
@@ -194,10 +194,10 @@ XTEST = bsxfun(@rdivide,XTEST,stand_dev);
 % theta = [61.0752102913007,57.8158266606964,0.0109558571044910,42.3504230297851,117.567889567609,59.7881438784855,80.1902988798573,67.4976467147845];
 % theta = [35.6344532939392,23.2478620583043,0.0145223340005544,28.8085373555612,27.5225839263258,4.26879082052562,7.13740873772817,11.5963839457466];
 % theta = [33.9728169672590,19.0881975405585,0.289421394293351,34.4401750073595,11.6799058045825,0.0985384399853474,3.24257804261918,39.6089767198389];
-theta = [13.8025754396909,32.0412381262034,0.0518917313544890,111.473502287412,64.5163089950549,0.195541262197264,5.84800582661357,19.3899665304380];
+% theta = [13.8025754396909,32.0412381262034,0.0518917313544890,111.473502287412,64.5163089950549,0.195541262197264,5.84800582661357,19.3899665304380];
 % theta = [27.2507285415686,34.0563516344196,0.00248191699746690,63.0440918792000,18.1918058647241,4.65033447686895,12.7423936084495,1.22967171502646];
 % theta = [3.83725590398492,58.2038832567709,0.845848297377934,2.25091552624403,38.0059216943300,18.9781881066915,10.5694430397704,1.59803044458439];
-% theta = [42.7843886879977,0.162954361358311,27.7793881595071,0.455673396455182,0.637154586789272,10.9536593216172,2.24019008403747,12.0393536806807];
+ theta = [18.0531554732340,36.4826853294378,0.944235422973845,54.4427657224729,24.7301981592509,0.137044724378891,1.81600646048114,28.2561434880245];
 sigf2 = theta(6);
 l = 1./theta(1:5);
 M = diag(l);
