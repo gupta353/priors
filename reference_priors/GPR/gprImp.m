@@ -19,11 +19,11 @@ Xtest(:,3) = log(Xtest(:,3))/log(10);
 
 % read train data in a particular range
 %
-ind = find(Xtrain(:,3)>log_ks_thresh & Xtrain(:,1)<=50);
+ind = find(Xtrain(:,3)<=log_ks_thresh & Xtrain(:,2)>1 & Xtrain(:,4)>1);
 Xtrain = Xtrain(ind,:);
 ytrain = ytrain(ind,:);
 
-ind = find(Xtest(:,3)>log_ks_thresh & Xtest(:,1)<=50);
+ind = find(Xtest(:,3)<=log_ks_thresh & Xtest(:,2)>1 & Xtest(:,4)>1);
 Xtest = Xtest(ind,:);
 ytest = ytest(ind,:);
 %}
@@ -91,14 +91,14 @@ profile off;
 %}
 
 % parameter optimization
-%{  
+%{
 loss=@(theta)GPRobj(theta,Xtrain,ytrain,Xtest,ytest,sig2);      % loss function
 % simulated annealing
 parent = [1,1,1,1,1,10,2,10];
 % parent = [4.47607032455577,57.4743548804763,0.000100000000000110,2.79062368567944,28.0900342186303,55.1299559566544];
 lb=[0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001];                 % lower bound
 ub=[1000,1000,1000,1000,1000,1000,1000,1000];                                  % upper bound
-options = optimset('TolFun',10^-8,'MaxFunEvals',1000);
+options = optimset('TolFun',10^-8,'MaxFunEvals',10);
 tic;
 [theta_opt,fval] = simulannealbnd(loss,parent,lb,ub,options);
 toc;
@@ -181,7 +181,7 @@ XTEST(:,3) = log(XTEST(:,3))/log(10);
 
 % remove training and test samples with values log_ks values less than
 % -5.3
-ind = find(XTEST(:,3)>log_ks_thresh & XTEST(:,1)<=50);
+ind = find(XTEST(:,3)<=log_ks_thresh & XTEST(:,2)>1 & XTEST(:,4)>1);
 XTEST = XTEST(ind,:);
 YTEST = YTEST(:,ind);
 
@@ -197,7 +197,7 @@ XTEST = bsxfun(@rdivide,XTEST,stand_dev);
 % theta = [13.8025754396909,32.0412381262034,0.0518917313544890,111.473502287412,64.5163089950549,0.195541262197264,5.84800582661357,19.3899665304380];
 % theta = [27.2507285415686,34.0563516344196,0.00248191699746690,63.0440918792000,18.1918058647241,4.65033447686895,12.7423936084495,1.22967171502646];
 % theta = [3.83725590398492,58.2038832567709,0.845848297377934,2.25091552624403,38.0059216943300,18.9781881066915,10.5694430397704,1.59803044458439];
- theta = [18.0531554732340,36.4826853294378,0.944235422973845,54.4427657224729,24.7301981592509,0.137044724378891,1.81600646048114,28.2561434880245];
+ theta = [1.80086949414843,37.7509569025494,0.141771007683850,15.8652081362826,23.2183428891622,10.4768082987152,24.5463400807173,1.41693759349708];
 sigf2 = theta(6);
 l = 1./theta(1:5);
 M = diag(l);
