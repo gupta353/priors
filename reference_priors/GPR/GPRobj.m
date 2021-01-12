@@ -42,7 +42,7 @@ function L = GPRobj(theta,Xtrain,ytrain,Xtest,ytest,sig2)
     %Kt = KerComp_iden((1:dt)',(1:dt)',Mt,sig2t) + 0.0001*eye(dt);
     
     % GPR implementation
-    [ftest,V]=GPR(Xtrain,ytrain,Ktrain,Ktrt,Ktest); % ftest =  mean prediction; C = covariance matrix multiplier
+    ftest = GPR(Xtrain,ytrain,Ktrain,Ktrt,Ktest); % ftest =  mean prediction; C = covariance matrix multiplier
     %V = V + 0.0001*eye(ntest);
     
     % sum of square error
