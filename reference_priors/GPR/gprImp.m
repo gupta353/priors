@@ -8,7 +8,7 @@ clc
 
 % read data
 direc = 'D:/Research/Thesis_work/Non_informative_priors/matlab_codes/reference_priors';
-fname = 'GP_train_test_data_14.mat';
+fname = 'GP_train_test_data_updated.mat';
 filename = fullfile(direc,'results/pdm_giuh',fname);
 load(filename);
 log_ks_thresh = -5;
@@ -19,11 +19,11 @@ Xtest(:,3) = log(Xtest(:,3))/log(10);
 
 % read train data in a particular range
 %
-ind = find(Xtrain(:,3)<=log_ks_thresh & Xtrain(:,2)<=0.12 & Xtrain(:,2)>0.04 & Xtrain(:,4)<=0.2);
+ind = find(Xtrain(:,3)<=log_ks_thresh & Xtrain(:,2)>0.04 & Xtrain(:,2)>1 & Xtrain(:,4)>1);
 Xtrain = Xtrain(ind,:);
 ytrain = ytrain(ind,:);
 
-ind = find(Xtest(:,3)<=log_ks_thresh & Xtest(:,2)<=0.12 & Xtest(:,2)>0.04 & Xtest(:,4)<=0.2);
+ind = find(Xtest(:,3)<=log_ks_thresh & Xtest(:,2)>0.04 & Xtest(:,2)>1 & Xtest(:,4)>1);
 Xtest = Xtest(ind,:);
 ytest = ytest(ind,:);
 %}
@@ -98,11 +98,11 @@ parent = [1,1,1,1,1,10,2,10];
 % parent = [4.47607032455577,57.4743548804763,0.000100000000000110,2.79062368567944,28.0900342186303,55.1299559566544];
 lb=[0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001];                 % lower bound
 ub=[1000,1000,1000,1000,1000,1000,1000,1000];                                  % upper bound
-options = optimset('TolFun',10^-8,'MaxFunEvals',10000);
+options = optimset('TolFun',10^-8,'MaxFunEvals',10);
 tic;
 [theta_opt,fval] = simulannealbnd(loss,parent,lb,ub,options);
 toc;
-% save('optimal_GP_param_11000_2','theta_opt','fval');
+%save(['optimal_GP_param_11000_',region,'.mat'],'theta_opt','fval');
 %}
 %% parameter optimization by dividing the data into two parts (part 1 contains log_ks>-5.3 and part two contains log_ks<=-5.3)
 %{
@@ -181,7 +181,7 @@ XTEST(:,3) = log(XTEST(:,3))/log(10);
 
 % remove training and test samples with values log_ks values less than
 % -5.3
-ind = find(XTEST(:,3)<=log_ks_thresh & XTEST(:,2)<=0.12 & XTEST(:,2)>0.04 & XTEST(:,4)<=0.2);
+ind = find(XTEST(:,3)<=log_ks_thresh & XTEST(:,2)>0.04 & XTEST(:,2)>1 & XTEST(:,4)>1);
 XTEST = XTEST(ind,:);
 YTEST = YTEST(:,ind);
 
@@ -198,7 +198,7 @@ XTEST = bsxfun(@rdivide,XTEST,stand_dev);
 % theta = [13.8025754396909,32.0412381262034,0.0518917313544890,111.473502287412,64.5163089950549,0.195541262197264,5.84800582661357,19.3899665304380];
 % theta = [27.2507285415686,34.0563516344196,0.00248191699746690,63.0440918792000,18.1918058647241,4.65033447686895,12.7423936084495,1.22967171502646];
 % theta = [3.83725590398492,58.2038832567709,0.845848297377934,2.25091552624403,38.0059216943300,18.9781881066915,10.5694430397704,1.59803044458439];
- theta = [0.364299946462771,29.0697303776902,0.147371454602733,79.7597870969107,37.5041135587876,32.0611753309847,4.83817092582170,94.7863397312531];
+theta = [5.86990068722010,85.5019653186422,0.740518558516930,11.3244652607143,37.9564978484813,31.8171774763359,14.9565732676033,29.4715716685511];
 sigf2 = theta(6);
 l = 1./theta(1:5);
 M = diag(l);
@@ -206,16 +206,17 @@ M = diag(l);
 tic;
 % computation of covariance matrix (of response) between training data
 Ktrain=KerComp_iden(Xtrain,Xtrain,M,sigf2)+sig2*eye(ntr);
-
+toc;
 % computation of covariance matrix (of response) between training and test
 % points
+tic;
 Ktrt=KerComp(Xtrain,XTEST,M,sigf2);
 
 % computation of covariance matrix (of response) between test data
 Ktest=KerComp_iden(XTEST,XTEST,M,sigf2);
 
 % GPR implementation
-[ftest,V]=GPR(Xtrain,ytrain,Ktrain,Ktrt,Ktest);
+ftest = GPR(Xtrain,ytrain,Ktrain,Ktrt,Ktest);
 toc;
 
 % plot observed vs. predicted data
