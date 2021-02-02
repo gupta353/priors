@@ -130,7 +130,7 @@ profile off; profile report
 %% define prior distribution parameters
 %
 cmax_l = 1; cmax_u = 2000;                      % storage capacity (in mm)
-b_l = 0.01; b_u = 10;                           % storage distribution parameter
+b_l = 0.04; b_u = 10;                           % storage distribution parameter
 log_k_l = -15;   log_k_u = -2;                  % logarithm of baseflow reservior constant (in s^-1)
 vs_l = 0.01; vs_u = 10;                         % in-stream-velocity (in m s^-1)
 vh_l = 0.01; vh_u = 10;                         % hill slope velocity (in m s^-1)
@@ -379,15 +379,16 @@ save(filename,'Xtrain','ytrain');
 %}
 
 %% create training data for GPR uisng sobolev sequences
-n_sobol_samps = 5000;     % number of latin hypercube samples on each dimension
-sample_interval = 90000+1:90000+n_sobol_samps;
+%
+n_sobol_samps = 1400;     % number of latin hypercube samples on each dimension
+sample_interval = 100000+1:100000+n_sobol_samps;
 n_var = 5;              % number of dimensions (each dimension corresponds to one parameter)
 rng(1);
 
 par_range = [1, 2000;...                      % storage capacity (in mm)
-    0.04, 0.12;...                              % storage distribution parameter
+    0.2, 1;...                              % storage distribution parameter
     -15, -5;...                               % logarithm of baseflow reservior constant (in s^-1)
-    0.2, 2;...                              % in-stream-velocity (in m s^-1)
+    0.01, 0.2;...                              % in-stream-velocity (in m s^-1)
     0.01, 10];                             % hill slope velocity (in m s^-1)
 
 param_samps = SobolsampAG(n_sobol_samps,n_var,par_range,sample_interval);
@@ -403,16 +404,31 @@ toc;
 %}
 %% computation of Bernardo prior
 %{
-n = 10000;       % number of samples to be drawn from the distribution
-N = 5000;       % number of samples to be drawn from prior distribution
-sig2 = 10;      % variance of residual
+% load trained GP
+fname = 'treedGP.mat';
+filename = fullfile(direc,'results/pdm_giuh',fname);
+load(filename);
 
-param = [1000,2.0,10^-10,0.4,2];
+n = 1000;       % number of samples to be drawn from the distribution
+N = 100;       % number of samples to be drawn from prior distribution
+sig2 = 1;      % variance of residual
 
-mu_param = int_pdm_giuh(param,GLOBAL_DATA,GEOMORPH);  % mean
-z = mvnrnd(mu_param,sig2*eye(length(mu_param)),n);             % set of samples
+param_list = repmat([400,2.0,10^-10,0.4,2],5,1);
+param_list(:,1) = (100:100:500)';
+param_list(:,3) = log(param_list(:,3))/log(10);
 
-% compute logarithm of asymptotic posterior
+
+for par_ind = 1:size(param_list,1)
+    
+    param = param_list(par_ind,:);
+    
+    mu_param = GPPred(GP,param);
+%   mu_param = int_pdm_giuh(param,GLOBAL_DATA,GEOMORPH);           % mean
+%     rng(1);
+    z = mvnrnd(mu_param,sig2*eye(length(mu_param)),n);             % set of samples
+    
+    % compute logarithm of asymptotic posterior
+    %{
 tic;
 log_likelihood = zeros(N,1);
 expected_log_likelihood = zeros(N,1);
@@ -421,8 +437,11 @@ expected_log_likelihood = zeros(N,1);
         
         % computation of log of normalizing constant - part-1
         theta_prior = priorrnd(cmax_l,cmax_u,b_l,b_u,log_k_l,log_k_u,vs_l,vs_u,vh_l,vh_u,alpha_l,alpha_u,log_sigma1_sq_l,log_sigma1_sq_u,log_sigma2_sq_l,log_sigma2_sq_u);
-        theta_prior(3) = 10^theta_prior(3);
-        mu = int_pdm_giuh(theta_prior,GLOBAL_DATA,GEOMORPH);
+
+        %         theta_prior(3) = 10^theta_prior(3);
+%         mu = int_pdm_giuh(theta_prior,GLOBAL_DATA,GEOMORPH);
+        
+        mu = GPPred(GP,theta_prior(1:5))';
         err = bsxfun(@minus,z,mu);
         SS = sum(sum(err.^2));
         
@@ -430,8 +449,8 @@ expected_log_likelihood = zeros(N,1);
         sum_log_likelihood(iter) = logsumexp(log_likelihood(1:iter)) - log(iter);
 %         expected_log_likelihood(iter) = sum(log_likelihood(1:iter))/iter;
         
-            plot(1:iter,sum_log_likelihood(1:iter));
-            pause(0.1);
+%             plot(1:iter,sum_log_likelihood(1:iter));
+%             pause(0.1);
         
     end
     
@@ -447,4 +466,64 @@ expected_log_likelihood = zeros(N,1);
 %
 % end
 toc;
+    %}
+    
+    % draw samples from posterior distribution using DRAM
+    % define 'model' structure
+    model.ssfun = @hydromod_likeli_dram_known_err;
+    model.priorfun  =  @priorpdf_dram_known_err;
+    model.S20 = 10;
+    model.N0 = 1;
+    model.N = 1;
+    % model.nbatch = 1;
+    
+    % define 'data' structure
+    data.GP = GP;
+    data.strm = z;
+    data.mu_strm = mu_param;
+    data.sig2 = sig2;
+    
+    % define 'options' structure
+    options.method = 'dram';
+    options.updatesigma =  0;
+    options.nsimu = 10000;
+    
+    nchains = 1;
+    nparams  = 5;
+    
+    
+    % draw seed parameter
+    theta0 = priorrnd(cmax_l,cmax_u,b_l,b_u,log_k_l,log_k_u,vs_l,vs_u,vh_l,vh_u,alpha_l,alpha_u,log_sigma1_sq_l,log_sigma1_sq_u,log_sigma2_sq_l,log_sigma2_sq_u);
+    
+    % define 'params' structure
+    params = {
+        {'Cmax',theta0(1),cmax_l,cmax_u,NaN,Inf,1,0},...
+        {'b',theta0(2),b_l,b_u,NaN,Inf,1,0},...
+        {'log_k',theta0(3),log_k_l,log_k_u,NaN,Inf,1,0},...
+        {'vs',theta0(4),vs_l,vs_u,NaN,Inf,1,0},...
+        {'vh',theta0(5),vh_l,vh_u,NaN,Inf,1,0},...
+        };
+    
+    % simulate mcmc chain
+    [~,chain,~,~] = mcmcrun(model,data,params,options);
+    
+    % remove first 10000 samples from the chain as burn-in
+    chain = chain(1001:end,:,:);
+    
+    
+    % remove the samples with NSE less than 0.99
+    d = length(mu_param);
+    for nse_ind=1:size(chain,1)
+        strmsim = GPPred(GP,chain(nse_ind,:));
+        NSE(nse_ind) = 1 - sum((strmsim-mu_param).^2)/d/var(mu_param);
+    end
+    ind = find(NSE>0.99);
+    chain = chain(ind,:);
+    
+    bw = std(chain)*(4/(nparams+2)/size(chain,1))^(1/(nparams+4));
+    support = [min(chain)-0.0001*min(chain);max(chain)+0.0001*max(chain)];
+    asymp_post(par_ind) = ksdensity(chain(:,1),param(1));
+%     asymp_post(par_ind) = 1;
+    clear chain
+end
 %}
