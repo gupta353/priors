@@ -380,14 +380,14 @@ save(filename,'Xtrain','ytrain');
 
 %% create training data for GPR uisng sobolev sequences
 %
-n_sobol_samps = 1290;     % number of latin hypercube samples on each dimension
-sample_interval = 110000+1:110000+n_sobol_samps;
+n_sobol_samps = 2881;     % number of latin hypercube samples on each dimension
+sample_interval = 120000+1:120000+n_sobol_samps;
 n_var = 5;              % number of dimensions (each dimension corresponds to one parameter)
 rng(1);
 
 par_range = [1, 2000;...                      % storage capacity (in mm)
     0.04, 0.12;...                              % storage distribution parameter
-    -15, -5;...                               % logarithm of baseflow reservior constant (in s^-1)
+    -8.5, -5;...                               % logarithm of baseflow reservior constant (in s^-1)
     2, 10;...                              % in-stream-velocity (in m s^-1)
     0.01, 10];                             % hill slope velocity (in m s^-1)
 
