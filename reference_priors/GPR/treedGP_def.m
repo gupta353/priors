@@ -434,7 +434,7 @@ l = 1./theta(1:5);
 M = diag(l);
 Ktrain{16} = KerComp_iden(Xtrain_r,Xtrain_r,M,sigf2)+sig2*eye(size(Xtrain_r,1));
 
-L = chol(Ktrain{15},'lower');         % cholesky decomposition of covariance matrix
+L = chol(Ktrain{16},'lower');         % cholesky decomposition of covariance matrix
 alpha{16} = L'\(L\ytrain_r);
 
 S = Xtrain_r*M*Xtrain_r';
