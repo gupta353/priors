@@ -19,11 +19,11 @@ Xtest(:,3) = log(Xtest(:,3))/log(10);
 
 % read train data in a particular range
 %
-ind = find(Xtrain(:,3)<=log_ks_thresh & Xtrain(:,2)>0.04 & Xtrain(:,2)>1 & Xtrain(:,4)>1);
+ind = find(Xtrain(:,3)<=log_ks_thresh & Xtrain(:,3)>-8.5 & Xtrain(:,2)>0.04 & Xtrain(:,2)<=0.12 & Xtrain(:,4)>2);
 Xtrain = Xtrain(ind,:);
 ytrain = ytrain(ind,:);
 
-ind = find(Xtest(:,3)<=log_ks_thresh & Xtest(:,2)>0.04 & Xtest(:,2)>1 & Xtest(:,4)>1);
+ind = find(Xtest(:,3)<=log_ks_thresh & Xtest(:,3)>-8.5 & Xtest(:,2)>0.04 & Xtest(:,2)<=0.12 & Xtest(:,4)>2);
 Xtest = Xtest(ind,:);
 ytest = ytest(ind,:);
 %}
@@ -97,8 +97,8 @@ loss=@(theta)GPRobj(theta,Xtrain,ytrain,Xtest,ytest,sig2);      % loss function
 parent = [1,1,1,1,1,10,2,10];
 % parent = [4.47607032455577,57.4743548804763,0.000100000000000110,2.79062368567944,28.0900342186303,55.1299559566544];
 lb=[0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001];                 % lower bound
-ub=[1000,1000,1000,1000,1000,1000,1000,1000];                                  % upper bound
-options = optimset('TolFun',10^-8,'MaxFunEvals',10);
+ub=[1000,1000,1000,1000,1000,1000,1000,10];                                  % upper bound
+options = optimset('TolFun',10^-8,'MaxFunEvals',100);
 tic;
 [theta_opt,fval] = simulannealbnd(loss,parent,lb,ub,options);
 toc;
@@ -181,7 +181,7 @@ XTEST(:,3) = log(XTEST(:,3))/log(10);
 
 % remove training and test samples with values log_ks values less than
 % -5.3
-ind = find(XTEST(:,3)<=log_ks_thresh & XTEST(:,2)>0.04 & XTEST(:,2)>1 & XTEST(:,4)>1);
+ind = find(XTEST(:,3)<=log_ks_thresh & XTEST(:,3)>-8.5 & XTEST(:,2)>0.04 & XTEST(:,2)<=0.12 & XTEST(:,4)>2);
 XTEST = XTEST(ind,:);
 YTEST = YTEST(:,ind);
 
@@ -198,7 +198,7 @@ XTEST = bsxfun(@rdivide,XTEST,stand_dev);
 % theta = [13.8025754396909,32.0412381262034,0.0518917313544890,111.473502287412,64.5163089950549,0.195541262197264,5.84800582661357,19.3899665304380];
 % theta = [27.2507285415686,34.0563516344196,0.00248191699746690,63.0440918792000,18.1918058647241,4.65033447686895,12.7423936084495,1.22967171502646];
 % theta = [3.83725590398492,58.2038832567709,0.845848297377934,2.25091552624403,38.0059216943300,18.9781881066915,10.5694430397704,1.59803044458439];
-theta = [5.86990068722010,85.5019653186422,0.740518558516930,11.3244652607143,37.9564978484813,31.8171774763359,14.9565732676033,29.4715716685511];
+theta = [0.418749138394504,92.4782457652514,4.61116603941533,70.3743608830372,52.8606329779621,42.8075314230780,81.8363162536556,14.6085169530464];
 sigf2 = theta(6);
 l = 1./theta(1:5);
 M = diag(l);
@@ -220,7 +220,6 @@ ftest = GPR(Xtrain,ytrain,Ktrain,Ktrt,Ktest);
 toc;
 
 % plot observed vs. predicted data
-
 for ind = 1:size(XTEST,1)
     SS = sum((YTEST(:,ind)-ftest(:,ind)).^2);
     Var = sum((YTEST(:,ind)-mean(YTEST(:,ind))).^2);
@@ -231,5 +230,4 @@ for ind = 1:size(XTEST,1)
 %         title(['NSE = ',num2str(NSE(ind))],'fontname','arial','fontsize',12);
 %         pause(1); hold off
 end
-
 %}
