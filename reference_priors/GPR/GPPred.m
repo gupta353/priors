@@ -1,37 +1,31 @@
 % this script computes streamflow using a calibrated treed-Gaussian process
 
-
-clear all
-close all
-clc
-
-direc = 'D:/Research/Thesis_work/Non_informative_priors/matlab_codes/reference_priors';
-
-% optimal parameter values
-fname = 'treedGP.mat';
-filename = fullfile(direc,'results/pdm_giuh',fname);
-load(filename);
-
-% train-test data
-fname = 'pdm_giuh_runs_11000_test.mat';
-filename = fullfile(direc,'results/pdm_giuh',fname);
-load(filename);
-
-% convert ks into log_ks space
-XTEST(:,3) = log(XTEST(:,3))/log(10);
-ind = find(XTEST(:,2)<=0.04);
-XTEST(ind,:) = [];
-YTEST(:,ind) = [];
-
-
-sig2 = 0.0001;          % a small observation variance is added to keep the covariance matrix positive definite
-
-region_def = GP.region_def;
-profile on;
-for samp = 1:size(XTEST,1)
-    xtest = XTEST(samp,:);
+function ftest = GPPred(GP,xtest)
+    
+    % direc = 'D:/Research/Thesis_work/Non_informative_priors/matlab_codes/reference_priors';
+    %
+    % % optimal parameter values
+    % fname = 'treedGP.mat';
+    % filename = fullfile(direc,'results/pdm_giuh',fname);
+    % load(filename);
+    %
+    % % train-test data
+    % fname = 'pdm_giuh_runs_10000_test_2.mat';
+    % filename = fullfile(direc,'results/pdm_giuh',fname);
+    % load(filename);
+    %
+    % % convert ks into log_ks space
+    % XTEST(:,3) = log(XTEST(:,3))/log(10);
+    % ind = find(XTEST(:,2)<=0.04);
+    % XTEST(ind,:) = [];
+    % YTEST(:,ind) = [];
+    
+    
+    % sig2 = 0.0001;          % a small observation variance is added to keep the covariance matrix positive definite
+    
+    region_def = GP.region_def;
     %% determine he region in which xtest lies
-   
+    
     reg = region_def(xtest);
     
     ind = find(reg==1);
@@ -55,8 +49,9 @@ for samp = 1:size(XTEST,1)
     
     alpha = GP.alpha{ind};
     % computation of covariance matrix (of response) between test data
-%     Ktest=KerComp_iden(xtest,xtest,M,sigf2);
+    %     Ktest=KerComp_iden(xtest,xtest,M,sigf2);
     
-    ftest(:,samp) = alpha'*Ktrt;
+    ftest = alpha'*Ktrt;
+    
+    
 end
-profile off
