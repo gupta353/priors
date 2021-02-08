@@ -19,11 +19,11 @@ Xtest(:,3) = log(Xtest(:,3))/log(10);
 
 % read train data in a particular range
 %
-ind = find(Xtrain(:,3)<=log_ks_thresh & Xtrain(:,2)>0.2 & Xtrain(:,2)<=1 & Xtrain(:,4)<=0.2);
+ind = find(Xtrain(:,3)<=log_ks_thresh & Xtrain(:,2)>1 & Xtrain(:,4)>1);
 Xtrain = Xtrain(ind,:);
 ytrain = ytrain(ind,:);
 
-ind = find(Xtest(:,3)<=log_ks_thresh & Xtest(:,2)>0.2 & Xtest(:,2)<=1 & Xtest(:,4)<=0.2);
+ind = find(Xtest(:,3)<=log_ks_thresh & Xtest(:,2)>1 & Xtest(:,4)>1);
 Xtest = Xtest(ind,:);
 ytest = ytest(ind,:);
 %}
@@ -181,7 +181,7 @@ XTEST(:,3) = log(XTEST(:,3))/log(10);
 
 % remove training and test samples with values log_ks values less than
 % -5.3
-ind = find(XTEST(:,3)<=log_ks_thresh & XTEST(:,2)>0.2 & XTEST(:,2)<=1 & XTEST(:,4)<=0.2);
+ind = find(XTEST(:,3)<=log_ks_thresh & XTEST(:,2)>1 & XTEST(:,4)>1);
 XTEST = XTEST(ind,:);
 YTEST = YTEST(:,ind);
 
@@ -198,7 +198,7 @@ XTEST = bsxfun(@rdivide,XTEST,stand_dev);
 % theta = [13.8025754396909,32.0412381262034,0.0518917313544890,111.473502287412,64.5163089950549,0.195541262197264,5.84800582661357,19.3899665304380];
 % theta = [27.2507285415686,34.0563516344196,0.00248191699746690,63.0440918792000,18.1918058647241,4.65033447686895,12.7423936084495,1.22967171502646];
 % theta = [3.83725590398492,58.2038832567709,0.845848297377934,2.25091552624403,38.0059216943300,18.9781881066915,10.5694430397704,1.59803044458439];
-theta = [0.338830022792959,51.5046691684576,0.142542915895451,62.8185532879843,4.30296115638263,4.13257868002832,70.6395449282900,3.32017878573093];
+theta = [4.16870382984098,94.3393235181526,0.722248121071314,18.7439779391837,9.57513790549991,23.8451085319440,7.41239733454441,36.9357492508961];
 sigf2 = theta(6);
 l = 1./theta(1:5);
 M = diag(l);
