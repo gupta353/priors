@@ -470,4 +470,4 @@ GP.S1 = S1;
 
 sname = 'treedGP.mat';
 filename = fullfile(direc,'results/pdm_giuh',sname);
-save(filename,'GP')
+save(filename,'GP','-v7.3')
